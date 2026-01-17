@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { verifyToken } = require('./auth');
 
-// Get server config.json
-router.get('/:id', async (req, res) => {
+// Get server config (read from config.json)
+router.get('/:id', verifyToken, async (req, res) => {
   try {
-    const server = req.app.locals.db.getServer(req.params.id);
+    const serverId = parseInt(req.params.id);
+    const server = req.app.locals.db.getServer(serverId);
+    
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
@@ -14,144 +17,137 @@ router.get('/:id', async (req, res) => {
     const configPath = path.join(server.server_path, 'config.json');
     
     try {
-      const config = await fs.readFile(configPath, 'utf8');
-      res.json(JSON.parse(config));
+      const configData = await fs.readFile(configPath, 'utf8');
+      const config = JSON.parse(configData);
+      
+      res.json({
+        serverName: config.ServerName || server.name,
+        motd: config.MOTD || '',
+        password: config.Password || '',
+        maxPlayers: config.MaxPlayers || 100,
+        maxViewRadius: config.MaxViewRadius || 12
+      });
     } catch (error) {
-      // Return default config if file doesn't exist
-      const defaultConfig = {
-        Version: 3,
-        ServerName: server.name,
-        MOTD: "",
-        Password: "",
-        MaxPlayers: server.max_players,
-        MaxViewRadius: server.max_view_radius,
-        LocalCompressionEnabled: false,
-        Defaults: {
-          World: "default",
-          GameMode: "Adventure"
-        },
-        ConnectionTimeouts: {
-          JoinTimeouts: {}
-        },
-        RateLimit: {},
-        Modules: {},
-        LogLevels: {},
-        Mods: {},
-        DisplayTmpTagsInStrings: false,
-        PlayerStorage: {
-          Type: "Hytale"
-        }
+      res.json({
+        serverName: server.name,
+        motd: '',
+        password: '',
+        maxPlayers: server.max_players || 100,
+        maxViewRadius: server.max_view_radius || 12
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update server config (write to config.json)
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const serverId = parseInt(req.params.id);
+    const { serverName, motd, password, maxPlayers, maxViewRadius } = req.body;
+    
+    console.log(`[CONFIG PUT] Server ID: ${serverId}`);
+    console.log(`[CONFIG PUT] Request body:`, req.body);
+    
+    const server = req.app.locals.db.getServer(serverId);
+    if (!server) {
+      return res.status(404).json({ error: 'Server not found' });
+    }
+
+    const configPath = path.join(server.server_path, 'config.json');
+    
+    let config = {};
+    try {
+      const configData = await fs.readFile(configPath, 'utf8');
+      config = JSON.parse(configData);
+    } catch (error) {
+      console.log(`[CONFIG PUT] Creating new config.json`);
+      config = {
+        "Version": 3,
+        "ServerName": "Hytale Server",
+        "MOTD": "",
+        "Password": "",
+        "MaxPlayers": 100,
+        "MaxViewRadius": 32,
+        "LocalCompressionEnabled": false,
+        "Defaults": { "World": "default", "GameMode": "Adventure" },
+        "ConnectionTimeouts": { "JoinTimeouts": {} },
+        "RateLimit": {},
+        "Modules": {},
+        "LogLevels": {},
+        "Mods": {},
+        "DisplayTmpTagsInStrings": false,
+        "PlayerStorage": { "Type": "Hytale" }
       };
-      res.json(defaultConfig);
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update server config.json
-router.put('/:id', async (req, res) => {
-  try {
-    const server = req.app.locals.db.getServer(req.params.id);
-    if (!server) {
-      return res.status(404).json({ error: 'Server not found' });
     }
 
-    const configPath = path.join(server.server_path, 'config.json');
-    await fs.writeFile(configPath, JSON.stringify(req.body, null, 2), 'utf8');
+    config.ServerName = serverName || config.ServerName;
+    config.MOTD = motd !== undefined ? motd : config.MOTD;
+    config.Password = password !== undefined ? password : config.Password;
+    config.MaxPlayers = maxPlayers !== undefined ? parseInt(maxPlayers) : config.MaxPlayers;
+    config.MaxViewRadius = maxViewRadius !== undefined ? parseInt(maxViewRadius) : config.MaxViewRadius;
 
-    // Update database if relevant fields changed
-    if (req.body.MaxPlayers !== undefined || req.body.MaxViewRadius !== undefined) {
-      // Would update DB here if needed
-    }
-
-    res.json({ success: true, config: req.body });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get world configs
-router.get('/:id/worlds', async (req, res) => {
-  try {
-    const server = req.app.locals.db.getServer(req.params.id);
-    if (!server) {
-      return res.status(404).json({ error: 'Server not found' });
-    }
-
-    const worldsPath = path.join(server.server_path, 'universe', 'worlds');
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
+    console.log(`[CONFIG PUT] Config.json saved successfully`);
     
+    // ✅ Update database using the existing updateServer method
     try {
-      const worlds = await fs.readdir(worldsPath);
-      const worldConfigs = [];
-
-      for (const worldDir of worlds) {
-        const configPath = path.join(worldsPath, worldDir, 'config.json');
-        try {
-          const config = await fs.readFile(configPath, 'utf8');
-          worldConfigs.push({
-            name: worldDir,
-            config: JSON.parse(config)
-          });
-        } catch (err) {
-          // Skip if config doesn't exist
-        }
-      }
-
-      res.json(worldConfigs);
-    } catch (error) {
-      res.json([]); // No worlds yet
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update world config
-router.put('/:id/worlds/:worldName', async (req, res) => {
-  try {
-    const server = req.app.locals.db.getServer(req.params.id);
-    if (!server) {
-      return res.status(404).json({ error: 'Server not found' });
+      req.app.locals.db.updateServer(serverId, {
+        name: serverName,
+        max_players: maxPlayers,
+        max_view_radius: maxViewRadius
+      });
+      console.log(`[CONFIG PUT] Database updated successfully`);
+    } catch (dbError) {
+      console.error(`[CONFIG PUT] DB update failed:`, dbError);
     }
 
-    const configPath = path.join(
-      server.server_path,
-      'universe',
-      'worlds',
-      req.params.worldName,
-      'config.json'
-    );
-
-    await fs.writeFile(configPath, JSON.stringify(req.body, null, 2), 'utf8');
-
-    res.json({ success: true, config: req.body });
+    res.json({ success: true, message: 'Configuration saved' });
   } catch (error) {
+    console.error(`[CONFIG PUT] Fatal error:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Get JVM arguments
-router.get('/:id/jvm', (req, res) => {
+router.get('/:id/jvm', verifyToken, (req, res) => {
   try {
-    const configs = req.app.locals.db.getServerConfigs(req.params.id);
-    res.json({ jvmArgs: configs.jvmArgs || ['-Xms2G', '-Xmx4G', '-XX:+UseG1GC'] });
+    const serverId = parseInt(req.params.id);
+    const config = req.app.locals.db.getServerConfig(serverId);
+    
+    res.json({
+      jvmArgs: config.jvmArgs || ['-Xms2G', '-Xmx4G', '-XX:+UseG1GC']
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // Update JVM arguments
-router.put('/:id/jvm', (req, res) => {
+router.put('/:id/jvm', verifyToken, (req, res) => {
   try {
+    const serverId = parseInt(req.params.id);
     const { jvmArgs } = req.body;
-    if (!Array.isArray(jvmArgs)) {
-      return res.status(400).json({ error: 'jvmArgs must be an array' });
+    
+    console.log(`[JVM PUT] Server ID: ${serverId}`);
+    console.log(`[JVM PUT] Body:`, req.body);
+    
+    if (!jvmArgs) {
+      return res.status(400).json({ error: 'JVM arguments required' });
     }
 
-    req.app.locals.db.saveServerConfig(req.params.id, 'jvmArgs', jvmArgs);
-    res.json({ success: true, jvmArgs });
+    let args = jvmArgs;
+    if (typeof jvmArgs === 'string') {
+      args = jvmArgs.split(' ').filter(arg => arg.trim());
+    }
+
+    console.log(`[JVM PUT] Saving:`, args);
+    req.app.locals.db.saveServerConfig(serverId, 'jvmArgs', args);
+    
+    res.json({ success: true, message: 'JVM arguments updated' });
   } catch (error) {
+    console.error(`[JVM PUT] Error:`, error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -40,12 +40,12 @@ export const setupHytaleDownloader = () => api.post('/servers/hytale/setup');
 export const checkHytaleCache = () => api.get('/servers/hytale/check-cache');
 
 // Config
-export const getServerConfig = (id) => api.get(`/servers/${id}/config`);
-export const updateServerConfig = (id, config) => api.put(`/servers/${id}/config`, config);
-export const getWorldConfigs = (id) => api.get(`/servers/${id}/config/worlds`);
-export const updateWorldConfig = (id, worldName, config) => api.put(`/servers/${id}/config/worlds/${worldName}`, config);
-export const getJVMArgs = (id) => api.get(`/servers/${id}/config/jvm`);
-export const updateJVMArgs = (id, jvmArgs) => api.put(`/servers/${id}/config/jvm`, { jvmArgs });
+export const getServerConfig = (id) => api.get(`/config/${id}`);
+export const updateServerConfig = (id, config) => api.put(`/config/${id}`, config);
+export const getWorldConfigs = (id) => api.get(`/config/${id}/worlds`);
+export const updateWorldConfig = (id, worldName, config) => api.put(`/config/${id}/worlds/${worldName}`, config);
+export const getJVMArgs = (id) => api.get(`/config/${id}/jvm`);
+export const updateJVMArgs = (id, jvmArgs) => api.put(`/config/${id}/jvm`, { jvmArgs });
 
 // Backups
 export const getBackups = (id) => api.get(`/backups/${id}`);
