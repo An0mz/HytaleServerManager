@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/auth/me', {
+      const response = await axios.get(`${API_URL}/auth/me`, {
         withCredentials: true
       });
       setUser(response.data);
@@ -24,7 +26,7 @@ export function useAuth() {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', 
+      const response = await axios.post(`${API_URL}/auth/login`, 
         { username, password },
         { withCredentials: true }
       );
@@ -40,7 +42,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await axios.post('http://localhost:3000/api/auth/logout', {}, {
+      await axios.post(`${API_URL}/auth/logout`, {}, {
         withCredentials: true
       });
     } catch (error) {

@@ -3,6 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const safePath = path.normalize(req.query.path).replace(/^(\.\.[\/\\])+/, '');
+const filePath = path.join(server.server_path, safePath);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -324,7 +326,6 @@ router.get('/:id/files', async (req, res) => {
   }
 });
 
-// Read file content
 router.get('/:id/files/read', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -332,7 +333,9 @@ router.get('/:id/files/read', async (req, res) => {
       return res.status(404).json({ error: 'Server not found' });
     }
 
-    const filePath = path.join(server.server_path, req.query.path);
+    if (!filePath.startsWith(server.server_path)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     const content = await fs.readFile(filePath, 'utf8');
     
     res.json({ content });

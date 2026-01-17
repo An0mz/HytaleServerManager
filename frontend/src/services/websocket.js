@@ -5,15 +5,25 @@ class WebSocketService {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
+    this.isAuthenticated = false;
+  }
+
+  getTokenFromCookie() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'token') {
+        return value;
+      }
+    }
+    return null;
   }
 
   connect() {
-    // Avoid creating multiple simultaneous connections
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return this.ws;
     }
 
-    // Determine WebSocket URL: prefer env var, then same-host with port, then localhost fallback
     let wsUrl = null;
     if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_WS_URL) {
       wsUrl = process.env.REACT_APP_WS_URL;
@@ -21,8 +31,7 @@ class WebSocketService {
       try {
         const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const host = window.location.hostname || 'localhost';
-        const port = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_WS_PORT)
-          || 3000;
+        const port = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_WS_PORT) || 3000;
         wsUrl = `${proto}://${host}:${port}`;
       } catch (e) {
         wsUrl = 'ws://localhost:3000';
@@ -40,16 +49,36 @@ class WebSocketService {
     this.ws.onopen = () => {
       console.info('WebSocket connected to', wsUrl);
       this.reconnectAttempts = 0;
+
+      const token = this.getTokenFromCookie();
+      if (token) {
+        this.send({
+          type: 'authenticate',
+          token: token
+        });
+      } else {
+        console.warn('No authentication token found');
+      }
+      
       this.notifyListeners('connected', {});
     };
 
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Avoid noisy logging in production; enable with VITE_WS_DEBUG=true
+
+        if (data.type === 'authenticated') {
+          this.isAuthenticated = true;
+          console.info('WebSocket authenticated as:', data.user?.username);
+        } else if (data.type === 'error' && data.message?.includes('Authentication')) {
+          this.isAuthenticated = false;
+          console.error('WebSocket authentication failed:', data.message);
+        }
+        
         if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_WS_DEBUG === 'true') {
           console.log('WebSocket message:', data);
         }
+        
         this.notifyListeners(data.type, data);
       } catch (error) {
         console.error('WebSocket message parse error:', error);
@@ -58,13 +87,13 @@ class WebSocketService {
 
     this.ws.onclose = (event) => {
       console.warn('WebSocket disconnected', event);
+      this.isAuthenticated = false;
       this.notifyListeners('disconnected', event);
       this.attemptReconnect();
     };
 
     this.ws.onerror = (event) => {
       console.error('WebSocket error event:', event);
-      // Close socket to trigger reconnect flow
       try {
         if (this.ws) this.ws.close();
       } catch (e) {}
@@ -97,10 +126,25 @@ class WebSocketService {
   }
 
   sendCommand(serverId, command) {
+    if (!command || typeof command !== 'string') {
+      console.error('Invalid command format');
+      return;
+    }
+    
+    if (command.trim().length === 0) {
+      console.error('Command cannot be empty');
+      return;
+    }
+    
+    if (command.length > 1000) {
+      console.error('Command too long');
+      return;
+    }
+    
     this.send({
       type: 'send_command',
       serverId,
-      command
+      command: command.trim()
     });
   }
 
@@ -111,13 +155,24 @@ class WebSocketService {
     });
   }
 
+  startHytaleDownload() {
+    this.send({
+      type: 'start_hytale_download'
+    });
+  }
+
+  cancelHytaleDownload() {
+    this.send({
+      type: 'cancel_hytale_download'
+    });
+  }
+
   on(eventType, callback) {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, []);
     }
     this.listeners.get(eventType).push(callback);
 
-    // Return unsubscribe function
     return () => {
       const callbacks = this.listeners.get(eventType);
       const index = callbacks.indexOf(callback);
@@ -138,11 +193,18 @@ class WebSocketService {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
+      this.isAuthenticated = false;
     }
   }
 
   getConnection() {
     return this.ws;
+  }
+  
+  isConnectedAndAuthenticated() {
+    return this.ws && 
+           this.ws.readyState === WebSocket.OPEN && 
+           this.isAuthenticated;
   }
 }
 
