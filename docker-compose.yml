@@ -5,15 +5,15 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: hytale-manager
+    container_name: hytale-server-manager
     ports:
-      - "3000:3000"  # Backend API
-      - "3001:3001"  # Frontend Dev Server
-      - "5520-5530:5520-5530/udp"  # Hytale servers (10 server slots)
+      - "3000:3000"
+      - "3001:3001"
+      - "5520-5620:5520-5620/udp"
     volumes:
       - ./backend:/app/backend
       - ./frontend:/app/frontend
-      - ./servers:/app/servers  # Hytale server instances
+      - ./servers:/app/servers
       - ./backups:/app/backups
       - ./data:/app/data
     environment:

@@ -53,17 +53,14 @@ export default function ConfigEditor({ serverId, onSaved }) {
     try {
       setSaving(true);
       
-      // Save server config
       await api.updateServerConfig(serverId, config);
       
-      // Save JVM args if not empty
       if (jvmArgs.trim()) {
         await api.updateJVMArgs(serverId, jvmArgs);
       }
       
       alert('Configuration saved successfully! Restart the server for changes to take effect.');
       
-      // ✅ Call parent callback with the new config
       if (onSaved) {
         onSaved({
           ServerName: config.serverName,
