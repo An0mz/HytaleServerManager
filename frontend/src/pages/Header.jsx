@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   RocketLaunchIcon, 
   UserCircleIcon, 
+  UsersIcon, // ✅ ADD THIS
   Cog6ToothIcon, 
   ArrowRightOnRectangleIcon,
   ChevronDownIcon
@@ -56,7 +57,7 @@ export default function Header() {
               <UserCircleIcon className="h-6 w-6 text-cyan-400" />
               <div className="text-left">
                 <p className="text-sm font-semibold text-white">{user?.username || 'User'}</p>
-                <p className="text-xs text-gray-500">{user?.role || 'Admin'}</p>
+                <p className="text-xs text-gray-500 capitalize">{user?.role || 'Admin'}</p>
               </div>
               <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -67,22 +68,33 @@ export default function Header() {
                 {/* User Info Section */}
                 <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/50">
                   <p className="text-sm font-semibold text-white">{user?.username || 'User'}</p>
-                  <p className="text-xs text-gray-400">{user?.email || 'admin@hsm.local'}</p>
+                  <p className="text-xs text-gray-400">{user?.email || 'No email set'}</p>
                 </div>
 
                 {/* Menu Items */}
                 <div className="py-2">
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      // Navigate to settings page (to be created)
-                      alert('Settings page coming soon!');
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white flex items-center space-x-3 transition-colors"
-                  >
-                    <Cog6ToothIcon className="h-5 w-5 text-gray-400" />
-                    <span>Settings</span>
-                  </button>
+                  {user?.role !== 'temp_admin' && (
+                    <Link
+                      to="/settings"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white flex items-center space-x-3 transition-colors"
+                    >
+                      <Cog6ToothIcon className="h-5 w-5 text-gray-400" />
+                      <span>Settings</span>
+                    </Link>
+                  )}
+
+                  {/* Users - Only for admin/temp_admin */}
+                  {(user?.role === 'admin' || user?.role === 'temp_admin') && (
+                    <Link
+                      to="/users"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white flex items-center space-x-3 transition-colors"
+                    >
+                      <UsersIcon className="h-5 w-5 text-gray-400" />
+                      <span>Users</span>
+                    </Link>
+                  )}
 
                   <button
                     onClick={() => {
@@ -99,7 +111,7 @@ export default function Header() {
                 {/* Footer */}
                 <div className="px-4 py-2 border-t border-gray-700 bg-gray-800/30">
                   <p className="text-xs text-gray-500 text-center">
-                    Hytale Manager v3.0
+                    Hytale Server Manager v3.0
                   </p>
                 </div>
               </div>

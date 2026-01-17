@@ -5,6 +5,8 @@ import ServerDetail from './pages/ServerDetail';
 import CreateServer from './pages/CreateServer';
 import Login from './pages/Login';
 import { useAuth } from './hooks/useAuth';
+import Settings from './pages/Settings';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/server/:id" element={<ProtectedRoute><ServerDetail /></ProtectedRoute>} />
         <Route path="/create" element={<ProtectedRoute><CreateServer /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       </Routes>
     </Router>
   );

@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth');
 const serverRoutes = require('./routes/servers');
 const configRoutes = require('./routes/config');
 const backupRoutes = require('./routes/backups');
+const userRoutes = require('./routes/users');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/backups', backupRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

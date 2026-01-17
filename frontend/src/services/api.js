@@ -62,5 +62,13 @@ export const register = (username, password, email) => api.post('/auth/register'
 export const logout = () => api.post('/auth/logout');
 export const getCurrentUser = () => api.get('/auth/me');
 export const checkSetupNeeded = () => api.get('/auth/setup-needed');
+export const changePassword = (currentPassword, newPassword) => api.put('/auth/change-password', { currentPassword, newPassword });
+export const createTempAdmin = () => api.post('/auth/create-temp-admin');
+export const cleanupTempAdmins = () => api.post('/auth/cleanup-temp-admins');
+
+// Users (Admin only)
+export const getUsers = () => api.get('/users');
+export const resetUserPassword = (userId, newPassword) => api.put(`/users/${userId}/password`, { newPassword });
+export const deleteUser = (userId) => api.delete(`/users/${userId}`);
 
 export default api;

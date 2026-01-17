@@ -17,6 +17,9 @@ export default function Login() {
     confirmPassword: '',
     email: ''
   });
+  const [showTempAdmin, setShowTempAdmin] = useState(false);
+  const [tempAdminInfo, setTempAdminInfo] = useState(null);
+  const [creatingTempAdmin, setCreatingTempAdmin] = useState(false);
 
   useEffect(() => {
     checkSetup();
@@ -84,6 +87,19 @@ export default function Login() {
     }
     
     setSubmitting(false);
+  };
+
+  const handleForgotPassword = async () => {
+    try {
+      setCreatingTempAdmin(true);
+      const response = await api.createTempAdmin();
+      setTempAdminInfo(response.data);
+      setShowTempAdmin(true);
+    } catch (error) {
+      alert('Failed to create temporary admin: ' + error.message);
+    } finally {
+      setCreatingTempAdmin(false);
+    }
   };
 
   if (loading) {
@@ -220,6 +236,15 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={creatingTempAdmin}
+            className="mt-4 w-full text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            {creatingTempAdmin ? 'Creating temp admin...' : 'Forgot Password?'}
+          </button>
 
           {isSetup && (
             <div className="mt-6 bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
