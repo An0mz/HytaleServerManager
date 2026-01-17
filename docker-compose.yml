@@ -22,9 +22,11 @@ services:
       - SERVERS_PATH=/app/servers
       - BACKUPS_PATH=/app/backups
       - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     networks:
       - hytale-network
+
 
 networks:
   hytale-network:
