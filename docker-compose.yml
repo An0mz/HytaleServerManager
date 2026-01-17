@@ -29,8 +29,3 @@ services:
 networks:
   hytale-network:
     driver: bridge
-
-volumes:
-  servers:
-  backups:
-  data:
