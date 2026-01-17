@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   DocumentTextIcon, 
   CodeBracketIcon,
@@ -42,7 +43,6 @@ export default function FileViewer({ serverId, filePath, onClose }) {
     try {
       setIsSaving(true);
       
-      // Validate JSON if it's a JSON file
       if (isJson) {
         JSON.parse(editedContent);
       }
@@ -82,19 +82,15 @@ export default function FileViewer({ serverId, filePath, onClose }) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 border border-gray-700/50 shadow-2xl">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-          </div>
+  const modalContent = loading ? (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 border border-gray-700/50 shadow-2xl">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
         </div>
       </div>
-    );
-  }
-
-  return (
+    </div>
+  ) : (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col border border-gray-700/50 shadow-2xl overflow-hidden">
         {/* Header */}
@@ -180,11 +176,11 @@ export default function FileViewer({ serverId, filePath, onClose }) {
             <textarea
               value={editedContent}
               onChange={(e) => setEditedContent(e.target.value)}
-              className="w-full h-full bg-gray-950 text-gray-100 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none resize-none"
-              spellCheck={false}
+              className="w-full h-full min-h-[600px] bg-gray-900 text-gray-100 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+              spellCheck="false"
             />
           ) : (
-            <pre className="bg-gray-950 text-gray-100 font-mono text-sm p-4 rounded-lg overflow-auto border border-gray-700">
+            <pre className="bg-gray-950 text-gray-100 font-mono text-sm p-4 rounded-lg overflow-auto border border-gray-700 max-h-[600px]">
               {isJson ? (
                 <code className="language-json">{JSON.stringify(JSON.parse(content), null, 2)}</code>
               ) : (
@@ -196,4 +192,6 @@ export default function FileViewer({ serverId, filePath, onClose }) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

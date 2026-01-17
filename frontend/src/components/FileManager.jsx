@@ -26,7 +26,16 @@ export default function FileManager({ serverId }) {
     try {
       setLoading(true);
       const response = await api.listFiles(serverId, currentPath);
-      setFiles(response.data.files || []);
+      const rawFiles = response.data.files || [];
+      
+      const sortedFiles = rawFiles.sort((a, b) => {
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        
+        return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+      });
+      
+      setFiles(sortedFiles);
     } catch (error) {
       console.error('Failed to load files:', error);
     } finally {
