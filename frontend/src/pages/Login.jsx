@@ -20,9 +20,28 @@ export default function Login() {
   const [showTempAdmin, setShowTempAdmin] = useState(false);
   const [tempAdminInfo, setTempAdminInfo] = useState(null);
   const [creatingTempAdmin, setCreatingTempAdmin] = useState(false);
+  const { setUser } = useAuth();¸
 
   useEffect(() => {
-    checkSetup();
+    const init = async () => {
+      try {
+        const response = await api.checkSetupNeeded();
+        const setupNeeded = response.data.setupNeeded;
+
+        setIsSetup(setupNeeded);
+
+        if (setupNeeded) {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error('Failed to check setup status:', err);
+        setIsSetup(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
   }, []);
 
   const checkSetup = async () => {
