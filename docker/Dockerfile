@@ -36,7 +36,7 @@ RUN mkdir -p /app/servers /app/backups /app/data
 EXPOSE 3000 3001 5520-5530/udp
 
 # Start script
-COPY docker/start.sh /start.sh
+COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 CMD ["/start.sh"]
