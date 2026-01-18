@@ -47,7 +47,9 @@ class WebSocketService {
     }
 
     this.ws.onopen = () => {
-      console.info('WebSocket connected to', wsUrl);
+      if (import.meta.env.DEV) {
+        console.info('WebSocket connected to', wsUrl);
+      }
       this.reconnectAttempts = 0;
 
       const token = this.getTokenFromCookie();
