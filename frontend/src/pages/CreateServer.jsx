@@ -12,7 +12,7 @@ export default function CreateServer() {
     port: 5520,
     maxPlayers: 20,
     maxViewRadius: 16,
-    jvmArgs: '-Xms2G -Xmx4G -XX:+UseG1GC'
+    jvmArgs: ''
   });
   const [files, setFiles] = useState({ jar: null, assets: null });
   const [useDownloader, setUseDownloader] = useState(true);
@@ -483,18 +483,18 @@ export default function CreateServer() {
             {/* JVM Arguments */}
             <div>
               <label className="block text-sm font-semibold text-gray-300 mb-2">
-                JVM Arguments
+                JVM Arguments (Optional)
               </label>
               <input
                 type="text"
                 name="jvmArgs"
-                required
                 value={formData.jvmArgs}
                 onChange={handleChange}
                 className="input-modern font-mono text-sm"
+                placeholder="-Xms2G -Xmx4G -XX:+UseG1GC"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Recommended: -Xms2G -Xmx4G -XX:+UseG1GC
+                Example: -Xms2G -Xmx4G -XX:+UseG1GC (leave empty for default)
               </p>
             </div>
 
