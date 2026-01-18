@@ -143,6 +143,7 @@ constructor(db) {
       this.hytaleDownloader.removeAllListeners('oauth-code');
       this.hytaleDownloader.removeAllListeners('progress');
       this.hytaleDownloader.removeAllListeners('download-complete');
+      this.hytaleDownloader.removeAllListeners('download-cancelled');
 
       // Set up event handlers for WebSocket broadcasting
       if (ws && ws.readyState === 1) {
@@ -176,6 +177,13 @@ constructor(db) {
           console.log('Sending complete notification to client');
           ws.send(JSON.stringify({
             type: 'hytale_complete'
+          }));
+        });
+        
+        this.hytaleDownloader.on('download-cancelled', () => {
+          console.log('Sending cancelled notification to client');
+          ws.send(JSON.stringify({
+            type: 'hytale_cancelled'
           }));
         });
       }

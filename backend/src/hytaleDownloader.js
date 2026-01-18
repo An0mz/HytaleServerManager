@@ -331,8 +331,20 @@ async extractGameZip(zipPath) {
 
   cancelDownload() {
     if (this.downloadProcess) {
-      this.downloadProcess.kill();
+      console.log('🛑 Canceling download process...');
+      try {
+        // Kill the process forcefully
+        this.downloadProcess.kill('SIGKILL');
+        console.log('✅ Download process killed');
+      } catch (e) {
+        console.warn('⚠️ Error killing process:', e.message);
+      }
       this.downloadProcess = null;
+      
+      // Emit cancellation event
+      this.emit('download-cancelled');
+    } else {
+      console.log('ℹ️ No download process to cancel');
     }
   }
 

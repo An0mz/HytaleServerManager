@@ -79,6 +79,13 @@ export default function CreateServer() {
             alert('✅ Download complete! Checking cache...');
             break;
             
+          case 'hytale_cancelled':
+            console.log('Download cancelled by user');
+            setDownloading(false);
+            setOauthModal(false);
+            setDownloadProgress([]);
+            break;
+            
           case 'hytale_failed':
             setDownloading(false);
             setOauthModal(false);
@@ -123,11 +130,22 @@ export default function CreateServer() {
     }
   };
 
+  const handleCancelDownload = () => {
+    console.log('Canceling download...');
+    WebSocketService.cancelHytaleDownload();
+    setDownloading(false);
+    setOauthModal(false);
+    setDownloadProgress([]);
+    setOauthUrl('');
+    setOauthCode('');
+  };
+
   const handleStartDownload = () => {
     setDownloading(true);
     setDownloadProgress([]);
     setOauthUrl('');
     setOauthCode('');
+    setOauthModal(true);
     
     console.log('Download button clicked');
     console.log('WebSocket state:', {
@@ -249,7 +267,7 @@ export default function CreateServer() {
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-900 rounded-2xl border border-cyan-500/30 max-w-2xl w-full p-6 relative">
               <button
-                onClick={() => setOauthModal(false)}
+                onClick={handleCancelDownload}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white"
               >
                 <XMarkIcon className="h-6 w-6" />
