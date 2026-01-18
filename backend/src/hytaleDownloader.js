@@ -86,6 +86,18 @@ class HytaleDownloader extends EventEmitter {
       // Make executable on Unix
       if (this.platform !== 'win32') {
         await fs.chmod(execPath, 0o755);
+        
+        // Wait a bit for filesystem to sync after chmod
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Verify the file is ready by trying to open it
+        try {
+          const fd = await fs.open(execPath, 'r');
+          await fd.close();
+        } catch (err) {
+          console.warn('⚠️ File not immediately accessible, waiting...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
       
       console.log(`✅ Found executable: ${executable}`);
@@ -102,6 +114,17 @@ async startDownload(execPath, outputZipPath) {
   console.log('🚀 Starting Hytale download with OAuth...');
   
   return new Promise((resolve, reject) => {
+    // Kill any existing process first
+    if (this.downloadProcess) {
+      console.log('⚠️ Killing existing download process...');
+      try {
+        this.downloadProcess.kill('SIGKILL');
+        this.downloadProcess = null;
+      } catch (e) {
+        console.warn('Could not kill existing process:', e.message);
+      }
+    }
+    
     // Convert to absolute paths
     const absoluteExecPath = path.resolve(execPath);
     const absoluteOutputPath = path.resolve(outputZipPath);
