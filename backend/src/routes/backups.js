@@ -28,7 +28,7 @@ router.post('/:id', async (req, res) => {
 
     const backupName = req.body.name || `backup_${Date.now()}`;
     const backupPath = path.join(
-      process.env.BACKUPS_PATH || '/app/backups',
+      process.env.BACKUPS_PATH || '/app/data/backups',
       `server_${serverId}`,
       `${backupName}.zip`
     );

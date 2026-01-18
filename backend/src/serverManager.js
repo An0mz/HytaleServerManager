@@ -60,9 +60,9 @@ constructor(db) {
   async createServer(serverData) {
     const { name, port, maxPlayers, maxViewRadius, jvmArgs, useDownloader } = serverData;
     
-    // Use /app/servers for Docker/Linux, ./servers for Windows/Mac
+    // Use /app/data/servers for Docker/Linux, ./servers for Windows/Mac
     const defaultServersPath = process.platform === 'linux'
-      ? '/app/servers'
+      ? '/app/data/servers'
       : './servers';
     
     // Create server directory first

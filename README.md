@@ -56,8 +56,8 @@ Access the app at `http://localhost:3000`
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - development or production (default: development)
 - `DATABASE_PATH` - Path to database file (default: /app/data/hytale-manager.json)
-- `SERVERS_PATH` - Path to servers directory (default: /app/servers)
-- `BACKUPS_PATH` - Path to backups directory (default: /app/backups)
+- `SERVERS_PATH` - Path to servers directory (default: /app/data/servers)
+- `BACKUPS_PATH` - Path to backups directory (default: /app/data/backups)
 
 See `.env.production.example` for a complete example configuration.
 

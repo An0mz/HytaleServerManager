@@ -59,8 +59,8 @@ docker run -d \
 - `NODE_ENV`: Set to `production` for production deployments
 - `PORT`: Server port (default: 3000)
 - `DATABASE_PATH`: Path to database file (default: /app/data/hytale-manager.db)
-- `SERVERS_PATH`: Path to servers directory (default: /app/servers)
-- `BACKUPS_PATH`: Path to backups directory (default: /app/backups)
+- `SERVERS_PATH`: Path to servers directory (default: /app/data/servers)
+- `BACKUPS_PATH`: Path to backups directory (default: /app/data/backups)
 
 ### Using with Reverse Proxy (Nginx/Apache)
 
