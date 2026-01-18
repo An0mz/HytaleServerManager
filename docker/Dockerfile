@@ -53,11 +53,10 @@ COPY --from=builder /app/frontend/dist ./backend/public
 # Create necessary directories
 RUN mkdir -p /app/servers /app/backups /app/data
 
+# Set working directory for npm start
+WORKDIR /app/backend
+
 # Expose ports
 EXPOSE 3000 5520-5530/udp
 
-# Start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
+CMD ["npm", "start"]
