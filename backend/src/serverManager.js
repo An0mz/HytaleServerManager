@@ -605,14 +605,39 @@ constructor(db) {
         config = JSON.parse(configData);
       } catch (e) {
         console.log(`📝 No existing config.json for server ${serverId}, creating new one`);
+        // Create default config structure
+        config = {
+          "Version": 3,
+          "ServerName": "Hytale Server",
+          "MOTD": "",
+          "Password": "",
+          "MaxPlayers": 20,
+          "MaxViewRadius": 32,
+          "LocalCompressionEnabled": false,
+          "Defaults": { "World": "default", "GameMode": "Adventure" },
+          "ConnectionTimeouts": { "JoinTimeouts": {} },
+          "RateLimit": {},
+          "Modules": {},
+          "LogLevels": {},
+          "Mods": {},
+          "DisplayTmpTagsInStrings": false,
+          "PlayerStorage": { "Type": "Hytale" }
+        };
       }
 
-      // Update with server name from database
-      config.name = serverInfo.name;
+      // Update with correct Hytale config field names
+      config.ServerName = serverInfo.name;
+      config.MaxPlayers = serverInfo.max_players || 20;
+      config.MaxViewRadius = serverInfo.max_view_radius || 16;
+      
+      // Remove incorrect 'name' field if it exists
+      if (config.name) {
+        delete config.name;
+      }
       
       // Write updated config back
       await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-      console.log(`✅ Updated config.json for server ${serverId} with name: ${serverInfo.name}`);
+      console.log(`✅ Updated config.json for server ${serverId}: ServerName=${serverInfo.name}, MaxPlayers=${config.MaxPlayers}, MaxViewRadius=${config.MaxViewRadius}`);
       
     } catch (error) {
       console.error(`❌ Failed to update config.json for server ${serverId}:`, error.message);
