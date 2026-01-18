@@ -15,7 +15,7 @@ services:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
-      - DATABASE_PATH=/app/data/hytale-manager.db
+      - DATABASE_PATH=/app/data/hytale-manager.json
       - SERVERS_PATH=/app/servers
       - BACKUPS_PATH=/app/backups
       - PORT=3000
