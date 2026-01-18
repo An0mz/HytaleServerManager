@@ -15,6 +15,8 @@ const backupRoutes = require('./routes/backups');
 const userRoutes = require('./routes/users');
 
 const app = express();
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
@@ -129,11 +131,10 @@ function checkCommandRateLimit(ws) {
 
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https') {
-      res.redirect(`https://${req.header('host')}${req.url}`);
-    } else {
-      next();
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      return next();
     }
+    res.redirect(`https://${req.headers.host}${req.url}`);
   });
 }
 
@@ -163,7 +164,7 @@ wss.on('connection', (ws, req) => {
             }
             
             const jwt = require('jsonwebtoken');
-            const JWT_SECRET = process.env.JWT_SECRET || 'b497b442940bb322884d27341a51fc30300229fad1e7e2db44d142696e52f7b0e4e5f99573f327ccdd3a39013732f214173e204d8a20d6885ec8a6321f04bf38';
+            const JWT_SECRET = process.env.JWT_SECRET;
             
             const decoded = jwt.verify(token, JWT_SECRET);
             ws.isAuthenticated = true;
