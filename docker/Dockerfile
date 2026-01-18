@@ -1,4 +1,4 @@
-FROM node:20-bullseye as builder
+FROM node:20-bullseye AS builder
 
 # Install Java 25 (Temurin/Adoptium)
 RUN apt-get update && \
