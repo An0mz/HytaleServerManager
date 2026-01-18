@@ -15,6 +15,7 @@ import ConfigEditor from '../components/ConfigEditor';
 import FileManager from '../components/FileManager';
 import StatsPanel from '../components/StatsPanel';
 import BackupManager from '../components/BackupManager';
+import ServerSettings from '../components/ServerSettings';
 import Header from './Header';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -153,6 +154,7 @@ export default function ServerDetail() {
     { id: 'files', name: 'File Manager' },
     { id: 'backups', name: 'Backups' },
     { id: 'stats', name: 'Statistics' },
+    { id: 'settings', name: 'Settings' },
   ];
 
   if (loading) {
@@ -387,6 +389,7 @@ export default function ServerDetail() {
           {activeTab === 'files' && <FileManager serverId={id} />}
           {activeTab === 'backups' && <BackupManager serverId={id} />}
           {activeTab === 'stats' && <StatsPanel serverId={id} serverStatus={server.status} />}
+          {activeTab === 'settings' && <ServerSettings serverId={id} />}
         </div>
       </div>
     </>

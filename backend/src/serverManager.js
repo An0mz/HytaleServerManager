@@ -18,7 +18,7 @@ constructor(db) {
   
   const defaultCachePath = process.platform === 'linux'
     ? '/app/data/cache/hytale'
-    : './cache/hytale';
+    : path.join(process.cwd(), 'cache', 'hytale');
   
   this.hytaleCache = process.env.HYTALE_CACHE_PATH || defaultCachePath;
   this.hytaleDownloader = new HytaleDownloader(this.hytaleCache);

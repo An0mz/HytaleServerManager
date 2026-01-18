@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -9,22 +9,10 @@ export default function BackupManager({ serverId }) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [backupName, setBackupName] = useState('');
-  const [showSchedule, setShowSchedule] = useState(false);
-  const [schedule, setSchedule] = useState({ enabled: false, cron: '0 3 * * *', retention: 7 });
 
   useEffect(() => {
     loadBackups();
-    loadSchedule();
   }, [serverId]);
-
-  const loadSchedule = async () => {
-    try {
-      const response = await api.getBackupSchedule(serverId);
-      setSchedule(response.data);
-    } catch (error) {
-      console.error('Failed to load schedule:', error);
-    }
-  };
 
   const loadBackups = async () => {
     try {
@@ -80,91 +68,11 @@ export default function BackupManager({ serverId }) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const handleScheduleSubmit = async () => {
-    try {
-      await api.updateBackupSchedule(serverId, schedule);
-      alert('Backup schedule updated successfully');
-      setShowSchedule(false);
-    } catch (error) {
-      alert('Failed to update schedule: ' + error.message);
-    }
-  };
-
-  const getCronDescription = (cronStr) => {
-    const presets = {
-      '0 3 * * *': 'Daily at 3:00 AM',
-      '0 */6 * * *': 'Every 6 hours',
-      '0 0 * * 0': 'Weekly on Sunday',
-      '0 2 * * 1-5': 'Weekdays at 2:00 AM'
-    };
-    return presets[cronStr] || cronStr;
-  };
-
   return (
     <div className="space-y-6">
       {/* Create Backup Card */}
       <div className={`${theme.card} p-6`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={`text-lg font-semibold ${theme.text}`}>Create New Backup</h3>
-          <button
-            onClick={() => setShowSchedule(!showSchedule)}
-            className="btn-secondary text-sm flex items-center space-x-2"
-          >
-            <ClockIcon className="h-4 w-4" />
-            <span>{schedule.enabled ? 'Schedule Active' : 'Configure Schedule'}</span>
-          </button>
-        </div>
-
-        {/* Schedule Configuration */}
-        {showSchedule && (
-          <div className={`mb-4 p-4 ${theme.bgSecondary} rounded-lg border ${theme.border} space-y-4`}>
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                checked={schedule.enabled}
-                onChange={(e) => setSchedule({ ...schedule, enabled: e.target.checked })}
-                className="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
-              />
-              <label className={`text-sm font-semibold ${theme.textSecondary}`}>Enable automatic backups</label>
-            </div>
-
-            {schedule.enabled && (
-              <>
-                <div>
-                  <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Schedule (Cron)</label>
-                  <select
-                    value={schedule.cron}
-                    onChange={(e) => setSchedule({ ...schedule, cron: e.target.value })}
-                    className="input-modern"
-                  >
-                    <option value="0 3 * * *">Daily at 3:00 AM</option>
-                    <option value="0 */6 * * *">Every 6 hours</option>
-                    <option value="0 0 * * 0">Weekly on Sunday</option>
-                    <option value="0 2 * * 1-5">Weekdays at 2:00 AM</option>
-                  </select>
-                  <p className={`text-xs ${theme.textSecondary} mt-1`}>{getCronDescription(schedule.cron)}</p>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Retention (days)</label>
-                  <input
-                    type="number"
-                    value={schedule.retention}
-                    onChange={(e) => setSchedule({ ...schedule, retention: parseInt(e.target.value) || 7 })}
-                    min="1"
-                    max="365"
-                    className="input-modern"
-                  />
-                  <p className={`text-xs ${theme.textSecondary} mt-1`}>Backups older than this will be auto-deleted</p>
-                </div>
-
-                <button onClick={handleScheduleSubmit} className="btn-primary text-sm">
-                  Save Schedule
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        <h3 className={`text-lg font-semibold mb-4 ${theme.text}`}>Create New Backup</h3>
 
         <div className="flex space-x-2">
           <input

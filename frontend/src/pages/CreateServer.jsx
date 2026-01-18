@@ -579,7 +579,7 @@ export default function CreateServer() {
                   <div>
                     <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Assets.zip *
-                    </label>
+                    </label>  
                     <input
                       type="file"
                       accept=".zip"

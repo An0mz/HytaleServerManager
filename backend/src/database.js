@@ -65,7 +65,7 @@ class DatabaseManager {
     try {
       const server = this.db.get('servers').find({ id: parseInt(id) }).value();
       if (!server) return null;
-      const allowed = ['name', 'port', 'max_players', 'max_view_radius', 'auto_start'];
+      const allowed = ['name', 'port', 'max_players', 'max_view_radius', 'auto_start', 'backupSchedule'];
       const assign = {};
       Object.keys(updates).forEach(k => {
         if (allowed.includes(k) || k === 'name') {
