@@ -511,9 +511,10 @@ export default function CreateServer() {
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={useDownloader}
+                    checked={cacheStatus.ready ? true : useDownloader}
                     onChange={(e) => setUseDownloader(e.target.checked)}
-                    className="mt-1 h-4 w-4 text-cyan-500 focus:ring-cyan-500 border-gray-600 rounded"
+                    disabled={cacheStatus.ready}
+                    className="mt-1 h-4 w-4 text-cyan-500 focus:ring-cyan-500 border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -532,10 +533,10 @@ export default function CreateServer() {
                     </div>
                     <p className="text-sm text-gray-400 mt-1">
                       {cacheStatus.ready 
-                        ? 'Server files will be copied from cache (takes 2-5 seconds)'
+                        ? 'Cache is ready! Server files will be automatically copied (takes 2-5 seconds)'
                         : useDownloader
-                          ? 'Cache not ready - click "Start Download" above first'
-                          : 'Uncheck to upload your own HytaleServer.jar and Assets.zip files'
+                          ? 'Cache not ready - click "Start Download" above first, or uncheck to upload files manually'
+                          : 'Upload your own HytaleServer.jar and Assets.zip files'
                       }
                     </p>
                   </div>
