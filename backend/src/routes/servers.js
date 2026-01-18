@@ -3,10 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const safePath = path.normalize(req.query.path).replace(/^(\.\.[\/\\])+/, '');
-const filePath = path.join(server.server_path, safePath);
 
-// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const serverId = req.params.id;
@@ -23,13 +20,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Get all servers
 router.get('/', (req, res) => {
   try {
-    // Return servers with live stats; compute directory sizes asynchronously
     const servers = req.app.locals.serverManager.getAllServers();
 
-    // Helper to compute directory size recursively
     const computeDirSize = async (dirPath) => {
       const fsPromises = require('fs').promises;
       const path = require('path');
@@ -284,7 +278,6 @@ router.post('/:id/upload', upload.array('files'), async (req, res) => {
   }
 });
 
-// Get server files - FIXED to return { files: [] }
 router.get('/:id/files', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -319,7 +312,6 @@ router.get('/:id/files', async (req, res) => {
       })
     );
 
-    // FIXED: Return { files: fileList } instead of just fileList
     res.json({ files: fileList });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -333,16 +325,24 @@ router.get('/:id/files/read', async (req, res) => {
       return res.status(404).json({ error: 'Server not found' });
     }
 
+    const rawPath = req.query.path || '';
+    const safePath = path
+      .normalize(rawPath)
+      .replace(/^(\.\.[\/\\])+/, '');
+
+    const filePath = path.join(server.server_path, safePath);
+
     if (!filePath.startsWith(server.server_path)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
     const content = await fs.readFile(filePath, 'utf8');
-    
     res.json({ content });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Write file content
 router.post('/:id/files/write', async (req, res) => {
