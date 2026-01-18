@@ -28,9 +28,12 @@ export default function Login() {
   const checkSetup = async () => {
     try {
       const response = await api.checkSetupNeeded();
-      setIsSetup(response.data.setupNeeded);
-    } catch (error) {
-      console.error('Failed to check setup status:', error);
+      const setupNeeded = response.data.setupNeeded;
+      if (setupNeeded) setIsSetup(true);
+      else setIsSetup(false);
+      setUser(null);
+    } catch (err) {
+      console.error(err);
       setIsSetup(false);
     } finally {
       setLoading(false);
@@ -43,7 +46,6 @@ export default function Login() {
     setError('');
 
     if (isSetup) {
-      // Registration flow
       if (!formData.username || !formData.password) {
         setError('Username and password are required');
         setSubmitting(false);
