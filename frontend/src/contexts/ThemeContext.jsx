@@ -5,29 +5,16 @@ const ThemeContext = createContext();
 export const themes = {
   dark: {
     name: 'Dark',
-    bg: 'bg-gray-900',
-    bgSecondary: 'bg-gray-800',
-    bgTertiary: 'bg-gray-700',
+    bg: 'bg-gray-950',
+    bgSecondary: 'bg-gray-900',
+    bgTertiary: 'bg-gray-800',
     text: 'text-gray-100',
     textSecondary: 'text-gray-300',
     border: 'border-gray-700',
     accent: 'bg-blue-600 hover:bg-blue-700',
     accentText: 'text-blue-400',
-    input: 'bg-gray-700 border border-gray-600 text-white',
-    card: 'bg-gray-800 border border-gray-700'
-  },
-  orange: {
-    name: 'Orange',
-    bg: 'bg-black',
-    bgSecondary: 'bg-gray-900',
-    bgTertiary: 'bg-gray-800',
-    text: 'text-orange-100',
-    textSecondary: 'text-orange-200',
-    border: 'border-orange-900',
-    accent: 'bg-orange-600 hover:bg-orange-700',
-    accentText: 'text-orange-400',
-    input: 'bg-gray-900 border border-orange-900 text-orange-100',
-    card: 'bg-gray-900 border border-orange-900'
+    input: 'bg-gray-800 border border-gray-700 text-white',
+    card: 'bg-gray-900 border border-gray-700 rounded-xl'
   },
   light: {
     name: 'Light',
@@ -40,7 +27,20 @@ export const themes = {
     accent: 'bg-blue-500 hover:bg-blue-600',
     accentText: 'text-blue-600',
     input: 'bg-white border border-gray-300 text-gray-900',
-    card: 'bg-white border border-gray-300 shadow-sm'
+    card: 'bg-white border border-gray-300 shadow-sm rounded-xl'
+  },
+  midnight: {
+    name: 'Midnight',
+    bg: 'bg-slate-950',
+    bgSecondary: 'bg-slate-900',
+    bgTertiary: 'bg-slate-800',
+    text: 'text-slate-100',
+    textSecondary: 'text-slate-300',
+    border: 'border-indigo-900/40',
+    accent: 'bg-indigo-600 hover:bg-indigo-500',
+    accentText: 'text-indigo-400',
+    input: 'bg-slate-900 border border-indigo-900/50 text-slate-100',
+    card: 'bg-slate-900 border border-indigo-900/40 rounded-xl'
   }
 };
 
@@ -49,7 +49,13 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    setCurrentTheme(savedTheme);
+    // Check if the saved theme exists, otherwise default to 'dark'
+    if (themes[savedTheme]) {
+      setCurrentTheme(savedTheme);
+    } else {
+      setCurrentTheme('dark');
+      localStorage.setItem('theme', 'dark');
+    }
   }, []);
 
   const changeTheme = (themeName) => {
