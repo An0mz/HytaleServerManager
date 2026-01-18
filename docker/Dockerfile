@@ -35,8 +35,8 @@ RUN cd frontend && npm run build
 # Copy built frontend to backend's public directory
 RUN cp -r frontend/dist backend/public
 
-# Create necessary directories
-RUN mkdir -p /app/servers /app/backups /app/data
+# Create necessary directories under /app/data for single volume mount
+RUN mkdir -p /app/data/servers /app/data/backups
 
 # Expose ports
 EXPOSE 3000 5520-5530/udp

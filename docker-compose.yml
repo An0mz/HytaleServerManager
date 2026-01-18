@@ -10,14 +10,12 @@ services:
       - "3000:3000"
       - "5520-5620:5520-5620/udp"
     volumes:
-      - ./servers:/app/servers
-      - ./backups:/app/backups
       - ./data:/app/data
     environment:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/hytale-manager.json
-      - SERVERS_PATH=/app/servers
-      - BACKUPS_PATH=/app/backups
+      - SERVERS_PATH=/app/data/servers
+      - BACKUPS_PATH=/app/data/backups
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
