@@ -35,6 +35,5 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
-  },
-  "express-rate-limit": "^7.1.5"
+  }
 }
