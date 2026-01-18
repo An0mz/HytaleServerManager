@@ -114,7 +114,13 @@ class WebSocketService {
           console.log('WebSocket message:', data);
         }
         
+        // Notify specific type listeners
         this.notifyListeners(data.type, data);
+        
+        // Also notify generic 'update' listeners for server-related events
+        if (data.type && data.type.startsWith('server_')) {
+          this.notifyListeners('update', data);
+        }
       } catch (error) {
         console.error('WebSocket message parse error:', error);
       }

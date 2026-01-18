@@ -415,6 +415,13 @@ constructor(db) {
         serverId,
         exitCode: code
       });
+      
+      this.emit('update', {
+        type: 'server_status_changed',
+        serverId,
+        status: 'stopped',
+        data: this.db.getServer(serverId)
+      });
     });
 
     // Handle errors
@@ -425,6 +432,13 @@ constructor(db) {
         if (serverInstance.statsInterval) clearInterval(serverInstance.statsInterval);
       } catch (e) {}
       this.db.updateServerStatus(serverId, 'stopped');
+      
+      this.emit('update', {
+        type: 'server_status_changed',
+        serverId,
+        status: 'stopped',
+        data: this.db.getServer(serverId)
+      });
     });
 
     // Handle stdin errors

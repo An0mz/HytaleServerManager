@@ -46,6 +46,12 @@ export default function ServerDetail() {
             loadServer();
           }
           break;
+        
+        case 'server_stopped':
+          if (message.serverId === parseInt(id)) {
+            loadServer();
+          }
+          break;
 
         case 'server_players_changed':
           if (message.serverId === parseInt(id)) {
