@@ -3,6 +3,7 @@ const cors = require('cors');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const cookieParser = require('cookie-parser')
@@ -13,6 +14,30 @@ const serverRoutes = require('./routes/servers');
 const configRoutes = require('./routes/config');
 const backupRoutes = require('./routes/backups');
 const userRoutes = require('./routes/users');
+
+// Validate and set JWT_SECRET
+let JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('ERROR: JWT_SECRET environment variable is not set!');
+    console.error('This is required for authentication to work in production.');
+    console.error('Please set JWT_SECRET to a strong random string.');
+    process.exit(1);
+  }
+  
+  // Auto-generate a temporary secret for development
+  JWT_SECRET = crypto.randomBytes(32).toString('hex');
+  console.warn('⚠️  WARNING: JWT_SECRET was not provided. Generated temporary secret for development.');
+  console.warn('⚠️  This secret will change on restart. Set JWT_SECRET in .env for persistence.');
+}
+
+if (JWT_SECRET.length < 32) {
+  console.warn('⚠️  WARNING: JWT_SECRET is less than 32 characters. Consider using a longer, stronger secret.');
+}
+
+// Make JWT_SECRET available globally
+process.env.JWT_SECRET = JWT_SECRET;
 
 const app = express();
 app.set('trust proxy', 1);
@@ -46,6 +71,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Serve static files from the built frontend
+app.use(express.static(path.join(__dirname, '../public')));
+
 const db = new Database();
 
 const serverManager = new ServerManager(db);
@@ -61,6 +89,11 @@ app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// SPA fallback: serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 const CommandValidator = {

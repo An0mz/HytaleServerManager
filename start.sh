@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Start backend server in background
+# Start backend server
 cd /app/backend
-npm start &
-
-# Start frontend dev server
-cd /app/frontend
 npm start
-
-# Keep container running
-wait -n

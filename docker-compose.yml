@@ -8,16 +8,13 @@ services:
     container_name: hytale-server-manager
     ports:
       - "3000:3000"
-      - "3001:3001"
       - "5520-5620:5520-5620/udp"
     volumes:
-      - ./backend:/app/backend
-      - ./frontend:/app/frontend
       - ./servers:/app/servers
       - ./backups:/app/backups
       - ./data:/app/data
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DATABASE_PATH=/app/data/hytale-manager.db
       - SERVERS_PATH=/app/servers
       - BACKUPS_PATH=/app/backups
