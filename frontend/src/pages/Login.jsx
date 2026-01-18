@@ -229,14 +229,16 @@ export default function Login() {
             </button>
           </form>
 
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            disabled={creatingTempAdmin}
-            className="mt-4 w-full text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
-          >
-            {creatingTempAdmin ? 'Creating temp admin...' : 'Forgot Password?'}
-          </button>
+          {!isSetup && (
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={creatingTempAdmin}
+              className="mt-4 w-full text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              {creatingTempAdmin ? 'Creating temp admin...' : 'Forgot Password?'}
+            </button>
+          )}
 
           {isSetup && (
             <div className="mt-6 bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">

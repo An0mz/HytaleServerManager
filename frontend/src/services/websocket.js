@@ -31,7 +31,7 @@ class WebSocketService {
       try {
         const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const host = window.location.hostname || 'localhost';
-        const port = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_WS_PORT) || 3000;
+        const port = window.location.port || 3000;
         wsUrl = `${proto}://${host}:${port}`;
       } catch (e) {
         wsUrl = 'ws://localhost:3000';
