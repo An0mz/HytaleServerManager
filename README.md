@@ -4,7 +4,7 @@
 
 ### Professional Web-Based Management Platform for Hytale Game Servers
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/An0mz/HytaleServerManager)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/An0mz/HytaleServerManager)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/anomz/hytale-server-manager)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-20+-brightgreen.svg)](https://nodejs.org)
