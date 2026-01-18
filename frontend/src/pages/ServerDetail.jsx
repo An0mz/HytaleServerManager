@@ -16,9 +16,11 @@ import FileManager from '../components/FileManager';
 import StatsPanel from '../components/StatsPanel';
 import BackupManager from '../components/BackupManager';
 import Header from './Header';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ServerDetail() {
   const { id } = useParams();
+  const { theme } = useTheme();
   const [server, setServer] = useState(null);
   const [activeTab, setActiveTab] = useState('console');
   const [consoleOutput, setConsoleOutput] = useState('');
@@ -155,10 +157,10 @@ export default function ServerDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen ${theme.bg} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading server...</p>
+          <p className={`mt-4 ${theme.textSecondary}`}>Loading server...</p>
         </div>
       </div>
     );
@@ -166,9 +168,9 @@ export default function ServerDetail() {
 
   if (!server) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen ${theme.bg} flex items-center justify-center`}>
         <div className="text-center">
-          <p className="text-gray-400 mb-4">Server not found</p>
+          <p className={`${theme.textSecondary} mb-4`}>Server not found</p>
           <Link to="/" className="text-cyan-400 hover:text-cyan-300">
             Back to Dashboard
           </Link>
@@ -197,14 +199,14 @@ export default function ServerDetail() {
   return (
       <>
     <Header />
-      <div className="min-h-screen p-6">
+      <div className={`min-h-screen ${theme.bg} p-6`}>
         {/* Auth Modal */}
         {authModal && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 rounded-2xl border border-cyan-500/30 max-w-2xl w-full p-6 relative">
+            <div className={`${theme.card} rounded-2xl border border-cyan-500/30 max-w-2xl w-full p-6 relative`}>
               <button
                 onClick={() => setAuthModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                className={`absolute top-4 right-4 ${theme.textSecondary} hover:${theme.text}`}
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -217,7 +219,7 @@ export default function ServerDetail() {
                 {/* URL */}
                 {authUrl && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Authorization URL:
                     </label>
                     <div className="flex gap-2">
@@ -225,7 +227,7 @@ export default function ServerDetail() {
                         href={authUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-4 py-3 bg-gray-800 rounded-lg text-cyan-400 hover:text-cyan-300 break-all"
+                        className={`flex-1 px-4 py-3 ${theme.bgTertiary} rounded-lg text-cyan-400 hover:text-cyan-300 break-all`}
                       >
                         {authUrl}
                       </a>
@@ -245,7 +247,7 @@ export default function ServerDetail() {
                 {/* Code */}
                 {authCode && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Authorization Code:
                     </label>
                     <div className="flex gap-2">
@@ -300,19 +302,19 @@ export default function ServerDetail() {
         )}
 
         {/* Header */}
-        <div className="card mb-6">
+        <div className={theme.card + " mb-6"}>
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Link 
                   to="/" 
-                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                  className={`p-2 hover:${theme.bgTertiary} rounded-lg transition-colors`}
                 >
-                  <ArrowLeftIcon className="h-5 w-5 text-gray-400" />
+                  <ArrowLeftIcon className={`h-5 w-5 ${theme.textSecondary}`} />
                 </Link>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">{server.name}</h1>
-                  <p className="text-sm text-gray-400">
+                  <h1 className={`text-2xl font-bold ${theme.text}`}>{server.name}</h1>
+                  <p className={`text-sm ${theme.textSecondary}`}>
                     Port {server.port} • Status: <span className={`capitalize font-semibold ${getStatusColor(server.status)}`}>{getStatusLabel(server.status)}</span>
                   </p>
                 </div>
@@ -349,7 +351,7 @@ export default function ServerDetail() {
             </div>
 
             {/* Tabs */}
-            <div className="mt-6 border-b border-gray-700/50">
+            <div className={`mt-6 border-b ${theme.border}`}>
               <nav className="-mb-px flex space-x-8">
                 {tabs.map((tab) => (
                   <button
@@ -357,8 +359,8 @@ export default function ServerDetail() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === tab.id
-                        ? 'border-cyan-500 text-cyan-400'
-                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                        ? `${theme.accent} ${theme.accentText}`
+                        : `border-transparent ${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
                     {tab.name}

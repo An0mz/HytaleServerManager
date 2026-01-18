@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PaperAirplaneIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import websocket from '../services/websocket';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Console({ serverId, serverStatus }) {
+  const { theme } = useTheme();
   const [output, setOutput] = useState([]);
   const [command, setCommand] = useState('');
   const [commandHistory, setCommandHistory] = useState([]);
@@ -99,11 +101,11 @@ export default function Console({ serverId, serverStatus }) {
   };
 
   return (
-    <div className="card overflow-hidden">
+    <div className={theme.card + " overflow-hidden"}>
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-700/50">
+      <div className={`px-6 py-4 ${theme.bgTertiary} border-b ${theme.border}`}>
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+          <h3 className={`text-lg font-semibold ${theme.text} flex items-center space-x-2`}>
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>Server Console</span>
           </h3>
@@ -114,7 +116,7 @@ export default function Console({ serverId, serverStatus }) {
                   outputRef.current.scrollTop = outputRef.current.scrollHeight;
                 }
               }}
-              className="px-3 py-1.5 rounded-lg bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 transition-all text-sm flex items-center space-x-1.5"
+              className={`px-3 py-1.5 rounded-lg ${theme.bgSecondary} ${theme.textSecondary} hover:${theme.bgTertiary} transition-all text-sm flex items-center space-x-1.5`}
               title="Scroll to bottom"
             >
               <ArrowPathIcon className="h-4 w-4" />
@@ -122,7 +124,7 @@ export default function Console({ serverId, serverStatus }) {
             </button>
             <button
               onClick={() => setOutput([])}
-              className="px-3 py-1.5 rounded-lg bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 transition-all text-sm flex items-center space-x-1.5"
+              className={`px-3 py-1.5 rounded-lg ${theme.bgSecondary} ${theme.textSecondary} hover:${theme.bgTertiary} transition-all text-sm flex items-center space-x-1.5`}
             >
               <TrashIcon className="h-4 w-4" />
               <span>Clear</span>
@@ -132,7 +134,7 @@ export default function Console({ serverId, serverStatus }) {
       </div>
 
       {/* Console Output */}
-      <div className="p-6 bg-gray-900/50">
+      <div className={`p-6 ${theme.bgSecondary}`}>
         <div
           ref={outputRef}
           className="console-output p-4 h-[600px] overflow-y-auto"
@@ -140,12 +142,12 @@ export default function Console({ serverId, serverStatus }) {
           {output.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <div className="inline-flex p-4 bg-gray-800 rounded-2xl mb-4">
-                  <svg className="h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className={`inline-flex p-4 ${theme.bgTertiary} rounded-2xl mb-4`}>
+                  <svg className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <p className="text-gray-500 font-medium">
+                <p className={`${theme.textSecondary} font-medium`}>
                   {serverStatus === 'running' 
                     ? 'Waiting for console output...' 
                     : 'Start the server to see console output'}
@@ -162,7 +164,7 @@ export default function Console({ serverId, serverStatus }) {
         {/* Command Input */}
         <div className="mt-4 flex space-x-3">
           <div className="flex-1 relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 font-bold">$</span>
+            <span className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.accentText} font-bold`}>$</span>
             <input
               type="text"
               value={command}
@@ -170,7 +172,7 @@ export default function Console({ serverId, serverStatus }) {
               onKeyDown={handleKeyDown}
               disabled={serverStatus !== 'running'}
               placeholder={serverStatus === 'running' ? 'Type a command... (↑↓ for history)' : 'Server must be running'}
-              className="w-full pl-10 pr-4 py-3 bg-gray-800/80 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full pl-10 pr-4 py-3 ${theme.input} border ${theme.border} rounded-xl ${theme.text} focus:ring-2 outline-none transition-all font-mono disabled:opacity-50 disabled:cursor-not-allowed`}
             />
           </div>
           <button
@@ -185,7 +187,7 @@ export default function Console({ serverId, serverStatus }) {
 
         {/* Command History Indicator */}
         {commandHistory.length > 0 && (
-          <p className="mt-2 text-xs text-gray-500">
+          <p className={`mt-2 text-xs ${theme.textSecondary}`}>
             {commandHistory.length} command{commandHistory.length !== 1 ? 's' : ''} in history • Use ↑↓ to navigate
           </p>
         )}

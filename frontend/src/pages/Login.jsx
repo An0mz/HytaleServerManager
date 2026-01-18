@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
 import * as api from '../services/api';
 
 export default function Login() {
   const navigate = useNavigate();
   const { user, setUser, login } = useAuth(); // added setUser
+  const { theme } = useTheme();
   const [isSetup, setIsSetup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -110,15 +112,15 @@ export default function Login() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950"></div>
+    <div className={`min-h-screen ${theme.bg} flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden`}>
+      <div className={`absolute inset-0 ${theme.bg}`}></div>
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
 
       <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
@@ -130,17 +132,17 @@ export default function Login() {
         <h2 className="text-center text-4xl font-bold gradient-text mb-2">
           Hytale Server Manager
         </h2>
-        <p className="text-center text-gray-400">
+        <p className={`text-center ${theme.textSecondary}`}>
           {isSetup ? 'Create Your Admin Account' : 'Sign in to your account'}
         </p>
       </div>
 
       <div className="relative mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="card p-8">
+        <div className={`${theme.card} p-8`}>
           {isSetup && (
             <div className="mb-6 bg-cyan-900/20 border border-cyan-500/30 rounded-xl p-4">
               <p className="text-sm text-cyan-400 font-semibold mb-1">🎉 First Time Setup</p>
-              <p className="text-xs text-gray-400">
+              <p className={`text-xs ${theme.textSecondary}`}>
                 Create your administrator account to get started. This will be the primary account for managing servers.
               </p>
             </div>
@@ -155,14 +157,14 @@ export default function Login() {
 
             {/* Username */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Username *</label>
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Username *</label>
               <input
                 type="text"
                 required
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="input-modern"
-                placeholder="Choose a username"
+                className={theme.input + " w-full px-4 py-2 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none"}
+                placeholder="Enter your username"
                 autoComplete="username"
               />
             </div>
@@ -170,12 +172,12 @@ export default function Login() {
             {/* Email */}
             {isSetup && (
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Email (optional)</label>
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Email (optional)</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-modern"
+                  className={theme.input + " w-full px-4 py-2 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none"}
                   placeholder="your.email@example.com"
                   autoComplete="email"
                 />
@@ -184,29 +186,29 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Password *</label>
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Password *</label>
               <input
                 type="password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="input-modern"
+                className={theme.input + " w-full px-4 py-2 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none"}
                 placeholder={isSetup ? "Create a strong password" : "Enter your password"}
                 autoComplete={isSetup ? "new-password" : "current-password"}
               />
-              {isSetup && <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>}
+              {isSetup && <p className={`text-xs ${theme.textSecondary} mt-1`}>Minimum 6 characters</p>}
             </div>
 
             {/* Confirm Password */}
             {isSetup && (
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Confirm Password *</label>
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Confirm Password *</label>
                 <input
                   type="password"
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="input-modern"
+                  className={theme.input + " w-full px-4 py-3 rounded-xl focus:ring-2 focus:outline-none transition-all duration-200"}
                   placeholder="Confirm your password"
                   autoComplete="new-password"
                 />
@@ -249,8 +251,8 @@ export default function Login() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-500">
-          Version 3.0 • Built with ❤️ for Hytale
+        <p className={`mt-6 text-center text-xs ${theme.textSecondary}`}>
+          Version 1.1.1 • Built with ❤️ for Hytale
         </p>
       </div>
     </div>

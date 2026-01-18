@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as api from '../services/api';
 import websocket from '../services/websocket';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function StatsPanel({ serverId, serverStatus }) {
+  const { theme } = useTheme();
   const [stats, setStats] = useState(null);
   const [history, setHistory] = useState([]);
 
@@ -41,7 +43,7 @@ export default function StatsPanel({ serverId, serverStatus }) {
 
   if (serverStatus !== 'running') {
     return (
-      <div className="card p-8 text-center text-gray-400">
+      <div className={`${theme.card} p-8 text-center ${theme.textSecondary}`}>
         Server must be running to view statistics
       </div>
     );
@@ -51,28 +53,28 @@ export default function StatsPanel({ serverId, serverStatus }) {
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="card p-6">
-          <div className="text-sm text-gray-400">Memory Usage</div>
-          <div className="text-2xl font-bold text-white">{stats?.memory || 0} MB</div>
+        <div className={`${theme.card} p-6`}>
+          <div className={`text-sm ${theme.textSecondary}`}>Memory Usage</div>
+          <div className={`text-2xl font-bold ${theme.text}`}>{stats?.memory || 0} MB</div>
         </div>
-        <div className="card p-6">
-          <div className="text-sm text-gray-400">CPU Usage</div>
-          <div className="text-2xl font-bold text-white">{stats?.cpu || 0}%</div>
+        <div className={`${theme.card} p-6`}>
+          <div className={`text-sm ${theme.textSecondary}`}>CPU Usage</div>
+          <div className={`text-2xl font-bold ${theme.text}`}>{stats?.cpu || 0}%</div>
         </div>
-        <div className="card p-6">
-          <div className="text-sm text-gray-400">Uptime</div>
-          <div className="text-2xl font-bold text-white">{Math.floor((stats?.uptime || 0) / 60)}m</div>
+        <div className={`${theme.card} p-6`}>
+          <div className={`text-sm ${theme.textSecondary}`}>Uptime</div>
+          <div className={`text-2xl font-bold ${theme.text}`}>{Math.floor((stats?.uptime || 0) / 60)}m</div>
         </div>
-        <div className="card p-6">
-          <div className="text-sm text-gray-400">Players</div>
-          <div className="text-2xl font-bold text-white">{stats?.playerCount || 0}</div>
+        <div className={`${theme.card} p-6`}>
+          <div className={`text-sm ${theme.textSecondary}`}>Players</div>
+          <div className={`text-2xl font-bold ${theme.text}`}>{stats?.playerCount || 0}</div>
         </div>
       </div>
 
       {/* Chart */}
       {history.length > 0 && (
-        <div className="card p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Resource Usage History</h3>
+        <div className={`${theme.card} p-6`}>
+          <h3 className={`text-lg font-semibold ${theme.text} mb-4`}>Resource Usage History</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />

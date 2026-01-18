@@ -71,6 +71,8 @@ export const deleteBackup = (id, backupId) => api.delete(`/backups/${id}/${backu
 export const downloadBackup = (id, backupId) => {
   window.open(`/api/backups/${id}/download/${backupId}`, '_blank');
 };
+export const getBackupSchedule = (id) => api.get(`/backups/${id}/schedule`);
+export const updateBackupSchedule = (id, schedule) => api.post(`/backups/${id}/schedule`, schedule);
 
 // Auth
 export const login = (username, password) => api.post('/auth/login', { username, password });

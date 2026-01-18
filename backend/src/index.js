@@ -9,6 +9,7 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser')
 const Database = require('./database');
 const ServerManager = require('./serverManager');
+const BackupScheduler = require('./backupScheduler');
 const authRoutes = require('./routes/auth');
 const serverRoutes = require('./routes/servers');
 const configRoutes = require('./routes/config');
@@ -80,8 +81,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 const db = new Database();
 
 const serverManager = new ServerManager(db);
+const backupScheduler = new BackupScheduler(db, serverManager);
 
 app.locals.serverManager = serverManager;
+app.locals.backupScheduler = backupScheduler;
 app.locals.db = db;
 
 app.use('/api/auth', authRoutes);
@@ -405,10 +408,24 @@ app.use((err, req, res, next) => {
 server.listen(PORT, () => {
   console.log(`Hytale Manager Backend running on port ${PORT}`);
   console.log(`WebSocket server ready`);
+  
+  // Auto-start servers on boot
+  setTimeout(() => {
+    const serversToStart = db.getAllServers().filter(s => s.auto_start === true);
+    if (serversToStart.length > 0) {
+      console.log(`🚀 Auto-starting ${serversToStart.length} server(s) with auto_start enabled...`);
+      serversToStart.forEach(server => {
+        serverManager.startServer(server.id)
+          .then(() => console.log(`✅ Auto-started server: ${server.name} (ID: ${server.id})`))
+          .catch(err => console.error(`❌ Failed to auto-start server ${server.name}:`, err.message));
+      });
+    }
+  }, 3000); // Wait 3 seconds for system to be ready
 });
 
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully...');
+  backupScheduler.stopAll();
   await serverManager.stopAllServers();
   server.close(() => {
     console.log('Server closed');

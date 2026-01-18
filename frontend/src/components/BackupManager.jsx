@@ -1,16 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function BackupManager({ serverId }) {
+  const { theme } = useTheme();
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [backupName, setBackupName] = useState('');
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [schedule, setSchedule] = useState({ enabled: false, cron: '0 3 * * *', retention: 7 });
 
   useEffect(() => {
     loadBackups();
+    loadSchedule();
   }, [serverId]);
+
+  const loadSchedule = async () => {
+    try {
+      const response = await api.getBackupSchedule(serverId);
+      setSchedule(response.data);
+    } catch (error) {
+      console.error('Failed to load schedule:', error);
+    }
+  };
 
   const loadBackups = async () => {
     try {
@@ -66,11 +80,92 @@ export default function BackupManager({ serverId }) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
+  const handleScheduleSubmit = async () => {
+    try {
+      await api.updateBackupSchedule(serverId, schedule);
+      alert('Backup schedule updated successfully');
+      setShowSchedule(false);
+    } catch (error) {
+      alert('Failed to update schedule: ' + error.message);
+    }
+  };
+
+  const getCronDescription = (cronStr) => {
+    const presets = {
+      '0 3 * * *': 'Daily at 3:00 AM',
+      '0 */6 * * *': 'Every 6 hours',
+      '0 0 * * 0': 'Weekly on Sunday',
+      '0 2 * * 1-5': 'Weekdays at 2:00 AM'
+    };
+    return presets[cronStr] || cronStr;
+  };
+
   return (
     <div className="space-y-6">
       {/* Create Backup Card */}
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Create New Backup</h3>
+      <div className={`${theme.card} p-6`}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-lg font-semibold ${theme.text}`}>Create New Backup</h3>
+          <button
+            onClick={() => setShowSchedule(!showSchedule)}
+            className="btn-secondary text-sm flex items-center space-x-2"
+          >
+            <ClockIcon className="h-4 w-4" />
+            <span>{schedule.enabled ? 'Schedule Active' : 'Configure Schedule'}</span>
+          </button>
+        </div>
+
+        {/* Schedule Configuration */}
+        {showSchedule && (
+          <div className={`mb-4 p-4 ${theme.bgSecondary} rounded-lg border ${theme.border} space-y-4`}>
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={schedule.enabled}
+                onChange={(e) => setSchedule({ ...schedule, enabled: e.target.checked })}
+                className="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+              />
+              <label className={`text-sm font-semibold ${theme.textSecondary}`}>Enable automatic backups</label>
+            </div>
+
+            {schedule.enabled && (
+              <>
+                <div>
+                  <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Schedule (Cron)</label>
+                  <select
+                    value={schedule.cron}
+                    onChange={(e) => setSchedule({ ...schedule, cron: e.target.value })}
+                    className="input-modern"
+                  >
+                    <option value="0 3 * * *">Daily at 3:00 AM</option>
+                    <option value="0 */6 * * *">Every 6 hours</option>
+                    <option value="0 0 * * 0">Weekly on Sunday</option>
+                    <option value="0 2 * * 1-5">Weekdays at 2:00 AM</option>
+                  </select>
+                  <p className={`text-xs ${theme.textSecondary} mt-1`}>{getCronDescription(schedule.cron)}</p>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Retention (days)</label>
+                  <input
+                    type="number"
+                    value={schedule.retention}
+                    onChange={(e) => setSchedule({ ...schedule, retention: parseInt(e.target.value) || 7 })}
+                    min="1"
+                    max="365"
+                    className="input-modern"
+                  />
+                  <p className={`text-xs ${theme.textSecondary} mt-1`}>Backups older than this will be auto-deleted</p>
+                </div>
+
+                <button onClick={handleScheduleSubmit} className="btn-primary text-sm">
+                  Save Schedule
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         <div className="flex space-x-2">
           <input
             type="text"
@@ -90,43 +185,43 @@ export default function BackupManager({ serverId }) {
       </div>
 
       {/* Backup History Card */}
-      <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-700">
-          <h3 className="text-lg font-semibold text-white">Backup History</h3>
+      <div className={`${theme.card} overflow-hidden`}>
+        <div className={`px-6 py-4 border-b ${theme.border}`}>
+          <h3 className={`text-lg font-semibold ${theme.text}`}>Backup History</h3>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-gray-400">Loading backups...</div>
+          <div className={`p-8 text-center ${theme.textSecondary}`}>Loading backups...</div>
         ) : backups.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">No backups found</div>
+          <div className={`p-8 text-center ${theme.textSecondary}`}>No backups found</div>
         ) : (
-          <div className="divide-y divide-gray-700">
+          <div className={`divide-y ${theme.border}`}>
             {backups.map((backup) => (
-              <div key={backup.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors">
+              <div key={backup.id} className={`px-6 py-4 flex items-center justify-between hover:${theme.bgSecondary} transition-colors`}>
                 <div>
-                  <div className="text-sm font-semibold text-white">{backup.backup_name}</div>
-                  <div className="text-sm text-gray-400">
+                  <div className={`text-sm font-semibold ${theme.text}`}>{backup.backup_name}</div>
+                  <div className={`text-sm ${theme.textSecondary}`}>
                     {new Date(backup.created_at).toLocaleString()} • {formatBytes(backup.size_bytes)}
                   </div>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => api.downloadBackup(serverId, backup.id)}
-                    className="p-2 text-gray-400 hover:text-cyan-400 transition-colors"
+                    className={`p-2 ${theme.textSecondary} hover:text-cyan-400 transition-colors`}
                     title="Download"
                   >
                     <ArrowDownTrayIcon className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => handleRestore(backup.id)}
-                    className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                    className={`p-2 ${theme.textSecondary} hover:text-blue-400 transition-colors`}
                     title="Restore"
                   >
                     <ArrowPathIcon className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => handleDelete(backup.id)}
-                    className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                    className={`p-2 ${theme.textSecondary} hover:text-red-400 transition-colors`}
                     title="Delete"
                   >
                     <TrashIcon className="h-5 w-5" />

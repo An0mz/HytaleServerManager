@@ -42,6 +42,7 @@ class DatabaseManager {
       port: serverData.port,
       max_players: serverData.maxPlayers || 20,
       max_view_radius: serverData.maxViewRadius || 16,
+      auto_start: serverData.autoStart || false,
       server_path: serverData.serverPath,
       status: 'stopped',
       created_at: new Date().toISOString(),
@@ -64,7 +65,7 @@ class DatabaseManager {
     try {
       const server = this.db.get('servers').find({ id: parseInt(id) }).value();
       if (!server) return null;
-      const allowed = ['name', 'port', 'max_players', 'max_view_radius'];
+      const allowed = ['name', 'port', 'max_players', 'max_view_radius', 'auto_start'];
       const assign = {};
       Object.keys(updates).forEach(k => {
         if (allowed.includes(k) || k === 'name') {

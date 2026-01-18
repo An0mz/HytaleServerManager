@@ -9,8 +9,10 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function FileViewer({ serverId, filePath, onClose }) {
+  const { theme } = useTheme();
   const [content, setContent] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -84,7 +86,7 @@ export default function FileViewer({ serverId, filePath, onClose }) {
 
   const modalContent = loading ? (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 border border-gray-700/50 shadow-2xl">
+      <div className={`${theme.card} rounded-2xl p-8 max-w-4xl w-full mx-4 border ${theme.border} shadow-2xl`}>
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
         </div>
@@ -92,9 +94,9 @@ export default function FileViewer({ serverId, filePath, onClose }) {
     </div>
   ) : (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col border border-gray-700/50 shadow-2xl overflow-hidden">
+      <div className={`${theme.card} rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col border ${theme.border} shadow-2xl overflow-hidden`}>
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-700/50 bg-gray-800/50">
+        <div className={`px-6 py-4 border-b ${theme.border} ${theme.bgSecondary}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {isJson ? (
@@ -103,8 +105,8 @@ export default function FileViewer({ serverId, filePath, onClose }) {
                 <DocumentTextIcon className="h-6 w-6 text-blue-400" />
               )}
               <div>
-                <h3 className="text-lg font-semibold text-white">{filePath.split('/').pop()}</h3>
-                <p className="text-sm text-gray-400">{filePath}</p>
+                <h3 className={`text-lg font-semibold ${theme.text}`}>{filePath.split('/').pop()}</h3>
+                <p className={`text-sm ${theme.textSecondary}`}>{filePath}</p>
               </div>
             </div>
             
@@ -124,7 +126,7 @@ export default function FileViewer({ serverId, filePath, onClose }) {
                       setEditedContent(content);
                       setIsEditing(false);
                     }}
-                    className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all flex items-center space-x-2"
+                    className={`px-3 py-2 rounded-lg ${theme.bgSecondary} ${theme.textSecondary} hover:${theme.bgTertiary} transition-all flex items-center space-x-2`}
                   >
                     <XMarkIcon className="h-4 w-4" />
                     <span>Cancel</span>
@@ -142,14 +144,14 @@ export default function FileViewer({ serverId, filePath, onClose }) {
                 <>
                   <button
                     onClick={handleDownload}
-                    className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all flex items-center space-x-2"
+                    className={`px-3 py-2 rounded-lg ${theme.bgSecondary} ${theme.textSecondary} hover:${theme.bgTertiary} transition-all flex items-center space-x-2`}
                   >
                     <ArrowDownTrayIcon className="h-4 w-4" />
                     <span>Download</span>
                   </button>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all flex items-center space-x-2"
+                    className={`px-3 py-2 rounded-lg ${theme.bgSecondary} ${theme.textSecondary} hover:${theme.bgTertiary} transition-all flex items-center space-x-2`}
                   >
                     <PencilIcon className="h-4 w-4" />
                     <span>Edit</span>
@@ -176,11 +178,11 @@ export default function FileViewer({ serverId, filePath, onClose }) {
             <textarea
               value={editedContent}
               onChange={(e) => setEditedContent(e.target.value)}
-              className="w-full h-full min-h-[600px] bg-gray-900 text-gray-100 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+              className={`w-full h-full min-h-[600px] ${theme.bgSecondary} ${theme.text} font-mono text-sm p-4 rounded-lg border ${theme.border} focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none`}
               spellCheck="false"
             />
           ) : (
-            <pre className="bg-gray-950 text-gray-100 font-mono text-sm p-4 rounded-lg overflow-auto border border-gray-700 max-h-[600px]">
+            <pre className={`${theme.bgTertiary} ${theme.text} font-mono text-sm p-4 rounded-lg overflow-auto border ${theme.border} max-h-[600px]`}>
               {isJson ? (
                 <code className="language-json">{JSON.stringify(JSON.parse(content), null, 2)}</code>
               ) : (
