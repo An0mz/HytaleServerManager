@@ -10,8 +10,8 @@ export default function CreateServer() {
   const [formData, setFormData] = useState({
     name: '',
     port: 5520,
-    maxPlayers: 100,
-    maxViewRadius: 12,
+    maxPlayers: 20,
+    maxViewRadius: 16,
     jvmArgs: '-Xms2G -Xmx4G -XX:+UseG1GC'
   });
   const [files, setFiles] = useState({ jar: null, assets: null });

@@ -94,8 +94,8 @@ constructor(db) {
       const serverId = this.db.createServer({
         name,
         port: port || 5520,
-        maxPlayers: maxPlayers || 100,
-        maxViewRadius: maxViewRadius || 12,
+        maxPlayers: maxPlayers || 20,
+        maxViewRadius: maxViewRadius || 16,
         serverPath
       });
 

@@ -11,8 +11,8 @@ export default function ConfigEditor({ serverId, onSaved }) {
     serverName: '',
     motd: '',
     password: '',
-    maxPlayers: 100,
-    maxViewRadius: 12
+    maxPlayers: 20,
+    maxViewRadius: 16
   });
   const [jvmArgs, setJvmArgs] = useState('');
   const [loading, setLoading] = useState(true);
@@ -31,8 +31,8 @@ export default function ConfigEditor({ serverId, onSaved }) {
         serverName: configResponse.data.serverName || '',
         motd: configResponse.data.motd || '',
         password: configResponse.data.password || '',
-        maxPlayers: configResponse.data.maxPlayers || 100,
-        maxViewRadius: configResponse.data.maxViewRadius || 12
+        maxPlayers: configResponse.data.maxPlayers || 20,
+        maxViewRadius: configResponse.data.maxViewRadius || 16
       });
       
       try {

@@ -68,7 +68,7 @@ router.put('/:id', verifyToken, async (req, res) => {
         "ServerName": "Hytale Server",
         "MOTD": "",
         "Password": "",
-        "MaxPlayers": 100,
+        "MaxPlayers": 20,
         "MaxViewRadius": 32,
         "LocalCompressionEnabled": false,
         "Defaults": { "World": "default", "GameMode": "Adventure" },
