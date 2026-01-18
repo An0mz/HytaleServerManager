@@ -12,8 +12,9 @@ const getApiUrl = () => {
     return '/api';
   }
   
-  // Development fallback
-  return 'http://localhost:3000/api';
+  // Development: use relative URL to leverage Vite proxy
+  // This avoids SSL/protocol issues and uses the configured proxy
+  return '/api';
 };
 
 const axiosInstance = axios.create({
