@@ -325,7 +325,13 @@ wss.on('connection', (ws, req) => {
             return;
           }
           
-          serverManager.downloadHytaleFiles(ws);
+          console.log('Starting Hytale download...');
+          serverManager.downloadHytaleFiles(ws).then(() => {
+            console.log('Hytale download finished');
+          }).catch(err => {
+            console.error('Hytale download error:', err);
+            ws.send(JSON.stringify({ type: 'error', message: 'Download failed: ' + err.message }));
+          });
           break;
           
         case 'cancel_hytale_download':
