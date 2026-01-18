@@ -16,8 +16,7 @@ constructor(db) {
   this.consoleSubscribers = new Map();
   this.statsInterval = null;
   
-  // Use /app/data/cache for persistence in Docker, ./cache for local dev
-  const defaultCachePath = process.env.NODE_ENV === 'production'
+  const defaultCachePath = process.platform === 'linux'
     ? '/app/data/cache/hytale'
     : './cache/hytale';
   
@@ -60,12 +59,10 @@ constructor(db) {
   async createServer(serverData) {
     const { name, port, maxPlayers, maxViewRadius, jvmArgs, useDownloader } = serverData;
     
-    // Use /app/data/servers for Docker/Linux, ./servers for Windows/Mac
     const defaultServersPath = process.platform === 'linux'
       ? '/app/data/servers'
       : './servers';
     
-    // Create server directory first
     const serverPath = path.join(
       process.env.SERVERS_PATH || defaultServersPath,
       `server_${Date.now()}`
@@ -73,24 +70,20 @@ constructor(db) {
     await fs.mkdir(serverPath, { recursive: true });
 
     try {
-      // If using downloader, attempt to copy cached files into the server dir
       if (useDownloader !== false) {
         await this.copyHytaleFilesToServer(serverPath);
 
-        // Verify files were copied; if not, treat as failure
         const jarPath = path.join(serverPath, 'HytaleServer.jar');
         const assetsPath = path.join(serverPath, 'Assets.zip');
         try {
           await fs.access(jarPath);
           await fs.access(assetsPath);
         } catch (err) {
-          // Cleanup directory and throw so caller knows creation failed
           try { await fs.rm(serverPath, { recursive: true, force: true }); } catch (e) {}
           throw new Error('Failed to copy Hytale files to server (cache not ready)');
         }
       }
 
-      // Save to database only after files are present (or if not using downloader)
       const serverId = this.db.createServer({
         name,
         port: port || 5520,
@@ -99,7 +92,6 @@ constructor(db) {
         serverPath
       });
 
-      // Save JVM args
       if (jvmArgs) {
         this.db.saveServerConfig(serverId, 'jvmArgs', jvmArgs);
       }
@@ -112,7 +104,6 @@ constructor(db) {
 
       return serverId;
     } catch (error) {
-      // Ensure we remove the server dir if creation failed
       try { await fs.rm(serverPath, { recursive: true, force: true }); } catch (e) {}
       throw error;
     }
@@ -126,7 +117,6 @@ constructor(db) {
     }
 
     try {
-      // Check if already cached
       const cacheReady = await this.hytaleDownloader.isCacheReady();
       console.log(`Cache ready status: ${cacheReady}`);
       
@@ -138,14 +128,12 @@ constructor(db) {
         return { success: true, cached: true };
       }
 
-      // Remove old listeners to prevent duplicates
       this.hytaleDownloader.removeAllListeners('oauth-url');
       this.hytaleDownloader.removeAllListeners('oauth-code');
       this.hytaleDownloader.removeAllListeners('progress');
       this.hytaleDownloader.removeAllListeners('download-complete');
       this.hytaleDownloader.removeAllListeners('download-cancelled');
 
-      // Set up event handlers for WebSocket broadcasting
       if (ws && ws.readyState === 1) {
         console.log('Setting up WebSocket event handlers...');
         
@@ -188,7 +176,6 @@ constructor(db) {
         });
       }
 
-      // Start download
       console.log('Calling downloadWithOAuth...');
       const result = await this.hytaleDownloader.downloadWithOAuth();
       console.log('downloadWithOAuth completed successfully');
@@ -285,7 +272,6 @@ constructor(db) {
       throw new Error('Server not found');
     }
 
-    // Check if server files exist
     const jarPath = path.join(serverInfo.server_path, 'HytaleServer.jar');
     try {
       await fs.access(jarPath);
@@ -293,11 +279,9 @@ constructor(db) {
       throw new Error('HytaleServer.jar not found. Please upload server files or use auto-download.');
     }
 
-    // Get JVM args
     const config = this.db.getServerConfig(serverId);
     const jvmArgs = config.jvmArgs || ['-Xms2G', '-Xmx4G', '-XX:+UseG1GC'];
 
-    // Build command
     const args = [
       ...jvmArgs,
       '-jar',
@@ -310,16 +294,14 @@ constructor(db) {
 
     console.log(`Starting server ${serverId}: java ${args.join(' ')}`);
 
-    // Start server process with proper stdio configuration
     const serverProcess = spawn('java', args, {
       cwd: serverInfo.server_path,
       env: { ...process.env },
-      stdio: ['pipe', 'pipe', 'pipe']  // stdin, stdout, stderr as pipes
+      stdio: ['pipe', 'pipe', 'pipe']
     });
 
-    // IMPROVED: Hash-based deduplication for logs
     const recentHashes = new Set();
-    const HASH_WINDOW = 500; // 500ms window for duplicate detection
+    const HASH_WINDOW = 500;
 
     const serverInstance = {
       id: serverId,
@@ -337,7 +319,6 @@ constructor(db) {
     this.servers.set(serverId, serverInstance);
     this.db.updateServerStatus(serverId, 'starting');
 
-    // Start periodic stats polling for this server (pidusage)
     try {
       serverInstance.statsInterval = setInterval(async () => {
         try {
@@ -345,27 +326,24 @@ constructor(db) {
           if (!pid) return;
           const stat = await pidusage(pid);
           const statsObj = {
-            cpu: Math.round(stat.cpu * 100) / 100, // percent
-            memory: Math.round((stat.memory || 0) / 1024 / 1024), // MB
+            cpu: Math.round(stat.cpu * 100) / 100,
+            memory: Math.round((stat.memory || 0) / 1024 / 1024),
             uptime: Math.floor((Date.now() - serverInstance.startTime) / 1000),
             playerCount: serverInstance.players.length
           };
           serverInstance.stats = statsObj;
-          // Emit structured server_stats for websocket listeners
           this.emit('update', {
             type: 'server_stats',
             serverId,
             data: statsObj
           });
         } catch (e) {
-          // ignore transient errors
         }
       }, 2000);
     } catch (e) {
       console.warn('Failed to start stats polling for server', serverId, e.message || e);
     }
 
-    // Broadcast status change immediately
     this.emit('update', {
       type: 'server_status_changed',
       serverId,
@@ -373,43 +351,35 @@ constructor(db) {
       data: this.db.getServer(serverId)
     });
 
-    // FIXED: Better log deduplication using content hashing
     const handleOutput = (data) => {
       const output = stripAnsi(data.toString());
       const now = Date.now();
-      
-      // Create hash of the content
       const contentHash = crypto.createHash('md5').update(output.trim()).digest('hex');
       
-      // Check if we've seen this exact content recently
       if (recentHashes.has(contentHash)) {
-        return; // Skip duplicate
+        return;
       }
       
-      // Add hash to set and schedule removal after window
       recentHashes.add(contentHash);
       setTimeout(() => {
         recentHashes.delete(contentHash);
       }, HASH_WINDOW);
       
-      // Add to console history (keep last 1000 lines)
       serverInstance.consoleHistory.push({
         timestamp: now,
         text: output
       });
       if (serverInstance.consoleHistory.length > 1000) {
-        serverInstance.consoleHistory.shift(); // Remove oldest
+        serverInstance.consoleHistory.shift();
       }
       
       this.broadcastConsole(serverId, output);
       this.parseServerOutput(serverId, output);
     };
 
-    // Handle both stdout and stderr (Java often uses stderr for logs)
     serverProcess.stdout.on('data', handleOutput);
     serverProcess.stderr.on('data', handleOutput);
 
-    // Handle process exit
     serverProcess.on('exit', (code) => {
       console.log(`Server ${serverId} exited with code ${code}`);
       this.servers.delete(serverId);
@@ -432,7 +402,6 @@ constructor(db) {
       });
     });
 
-    // Handle errors
     serverProcess.on('error', (error) => {
       console.error(`Server ${serverId} error:`, error);
       this.servers.delete(serverId);
@@ -449,12 +418,10 @@ constructor(db) {
       });
     });
 
-    // Handle stdin errors
     serverProcess.stdin.on('error', (error) => {
       console.error(`Server ${serverId} stdin error:`, error.message);
     });
 
-    // Handle stdin close
     serverProcess.stdin.on('close', () => {
       console.warn(`Server ${serverId} stdin closed`);
     });
