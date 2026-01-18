@@ -5,8 +5,10 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ConfigEditor({ serverId, onSaved }) {
+  const { theme } = useTheme();
   const [config, setConfig] = useState({
     serverName: '',
     motd: '',
@@ -78,7 +80,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
 
   if (loading) {
     return (
-      <div className="card p-8">
+      <div className={`${theme.card} p-8`}>
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
         </div>
@@ -89,18 +91,18 @@ export default function ConfigEditor({ serverId, onSaved }) {
   return (
     <div className="space-y-6">
       {/* Server Configuration */}
-      <div className="card overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-700/50">
+      <div className={`${theme.card} overflow-hidden`}>
+        <div className={`px-6 py-4 ${theme.bgSecondary} border-b ${theme.border}`}>
           <div className="flex items-center space-x-3">
             <ServerIcon className="h-6 w-6 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-white">Server Configuration</h3>
+            <h3 className={`text-lg font-semibold ${theme.text}`}>Server Configuration</h3>
           </div>
         </div>
 
           <div className="p-6 space-y-6">
             {/* Server Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Server Name
               </label>
               <input
@@ -115,7 +117,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
 
             {/* MOTD */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 MOTD (Message of the Day)
               </label>
               <textarea
@@ -130,7 +132,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Password (Optional)
               </label>
               <input
@@ -146,7 +148,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
             {/* Max Players and View Radius */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                   Max Players
                 </label>
                 <input
@@ -161,7 +163,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                   Max View Radius
                 </label>
                 <input
@@ -179,11 +181,11 @@ export default function ConfigEditor({ serverId, onSaved }) {
         </div>
 
       {/* JVM Arguments */}
-      <div className="card overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-700/50">
+      <div className={`${theme.card} overflow-hidden`}>
+        <div className={`px-6 py-4 ${theme.bgSecondary} border-b ${theme.border}`}>
           <div className="flex items-center space-x-3">
             <CogIcon className="h-6 w-6 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">JVM Arguments</h3>
+            <h3 className={`text-lg font-semibold ${theme.text}`}>JVM Arguments</h3>
           </div>
         </div>
 
@@ -196,7 +198,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
             placeholder="-Xms2G -Xmx4G -XX:+UseG1GC"
             autoComplete="off"
           />
-          <p className="text-xs text-gray-500 mt-2">
+          <p className={`text-xs ${theme.textSecondary} mt-2`}>
             Space-separated JVM arguments
           </p>
         </div>

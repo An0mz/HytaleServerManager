@@ -10,8 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import FileViewer from './FileViewer';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function FileManager({ serverId }) {
+  const { theme } = useTheme();
   const [files, setFiles] = useState([]);
   const [currentPath, setCurrentPath] = useState('');
   const [loading, setLoading] = useState(true);
@@ -123,27 +125,27 @@ export default function FileManager({ serverId }) {
 
   return (
     <>
-      <div className="card overflow-hidden">
+      <div className={`${theme.card} overflow-hidden`}>
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-700/50">
+        <div className={`px-6 py-4 ${theme.bgSecondary} border-b ${theme.border}`}>
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-2">File Manager</h3>
+              <h3 className={`text-lg font-semibold ${theme.text} mb-2`}>File Manager</h3>
               
               {/* Breadcrumbs */}
               <div className="flex items-center space-x-2 text-sm">
                 <button
                   onClick={() => setCurrentPath('')}
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                  className={`${theme.accentText} hover:text-cyan-300 transition-colors font-medium`}
                 >
                   Root
                 </button>
                 {breadcrumbs.map((crumb, index) => (
                   <React.Fragment key={index}>
-                    <span className="text-gray-600">/</span>
+                    <span className={theme.textSecondary}>/</span>
                     <button
                       onClick={() => setCurrentPath(breadcrumbs.slice(0, index + 1).join('/'))}
-                      className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                      className={`${theme.accentText} hover:text-cyan-300 transition-colors font-medium`}
                     >
                       {crumb}
                     </button>
@@ -174,15 +176,15 @@ export default function FileManager({ serverId }) {
             </div>
           ) : files.length === 0 ? (
             <div className="text-center py-12">
-              <FolderOpenIcon className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500">No files in this directory</p>
+              <FolderOpenIcon className={`h-16 w-16 ${theme.textSecondary} mx-auto mb-4`} />
+              <p className={theme.textSecondary}>No files in this directory</p>
             </div>
           ) : (
             <div className="space-y-2">
               {files.map((file, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 bg-gray-800/30 hover:bg-gray-800/50 rounded-xl border border-gray-700/30 transition-all group"
+                  className={`flex items-center justify-between p-4 ${theme.bgSecondary} hover:${theme.bgTertiary} rounded-xl border ${theme.border} transition-all group`}
                 >
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
                     {file.isDirectory ? (
@@ -190,7 +192,7 @@ export default function FileManager({ serverId }) {
                         <FolderIcon className="h-6 w-6 text-yellow-400 flex-shrink-0" />
                         <button
                           onClick={() => handleNavigate(file.path)}
-                          className="text-white hover:text-cyan-400 transition-colors font-medium truncate"
+                          className={`${theme.text} hover:text-cyan-400 transition-colors font-medium truncate`}
                         >
                           {file.name}
                         </button>
@@ -199,8 +201,8 @@ export default function FileManager({ serverId }) {
                       <>
                         <span className="text-2xl flex-shrink-0">{getFileIcon(file.name)}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium truncate">{file.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className={`${theme.text} font-medium truncate`}>{file.name}</p>
+                          <p className={`text-xs ${theme.textSecondary}`}>
                             {(file.size / 1024).toFixed(2)} KB
                           </p>
                         </div>

@@ -1,10 +1,12 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/An0mz/HytaleServerManager/main/frontend/public/hytale-icon.png" alt="Hytale Server Manager" width="128" height="128">
+
 # Hytale Server Manager
 
 ### Professional Web-Based Management Platform for Hytale Game Servers
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/An0mz/HytaleServerManager)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](https://github.com/An0mz/HytaleServerManager)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/anomz/hytale-server-manager)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-20+-brightgreen.svg)](https://nodejs.org)
@@ -353,7 +355,7 @@ docker logs hytale-server-manager
 <details>
 <summary><b>Server files lost after update</b></summary>
 
-**You're likely using an old image!** Update to v3.1.0+
+**You're likely using an old image!** Update to v1.1.0+
 
 All paths now correctly use `/app/data/` which is mounted. Older versions used unmounted paths.
 

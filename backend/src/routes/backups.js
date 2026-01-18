@@ -150,4 +150,30 @@ router.delete('/:id/:backupId', async (req, res) => {
   }
 });
 
+// Get backup schedule for a server
+router.get('/:id/schedule', (req, res) => {
+  try {
+    const serverId = parseInt(req.params.id);
+    const schedule = req.app.locals.backupScheduler.getServerSchedule(serverId);
+    res.json(schedule || { enabled: false, cron: '0 3 * * *', retention: 7 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update backup schedule for a server
+router.post('/:id/schedule', (req, res) => {
+  try {
+    const serverId = parseInt(req.params.id);
+    const { enabled, cron, retention } = req.body;
+    
+    const schedule = { enabled, cron, retention: parseInt(retention) || 7 };
+    req.app.locals.backupScheduler.updateSchedule(serverId, schedule);
+    
+    res.json({ success: true, schedule });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
