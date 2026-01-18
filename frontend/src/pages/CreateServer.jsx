@@ -67,13 +67,16 @@ export default function CreateServer() {
           case 'hytale_complete':
             setDownloading(false);
             setOauthModal(false);
-                
-            // Wait a bit for files to finish copying
-            setTimeout(() => {
-              checkCacheStatus();
-            }, 1000);
             
-            alert('✅ Download complete! Cache is ready.');
+            console.log('Download complete, waiting to check cache...');
+            
+            // Wait longer for files to be written to disk
+            setTimeout(() => {
+              console.log('Checking cache status...');
+              checkCacheStatus();
+            }, 2000);
+            
+            alert('✅ Download complete! Checking cache...');
             break;
             
           case 'hytale_failed':
@@ -96,14 +99,22 @@ export default function CreateServer() {
   const checkCacheStatus = async () => {
     setCacheStatus(prev => ({ ...prev, checking: true }));
     try {
+      console.log('📥 Fetching cache status...');
       const response = await api.checkHytaleCache();
+      console.log('Cache response:', response.data);
       setCacheStatus({
         checking: false,
         ready: response.data.success,
         message: response.data.message,
         files: response.data.files
       });
+      if (response.data.success) {
+        console.log('✅ Cache is ready!');
+      } else {
+        console.warn('⚠️ Cache not ready:', response.data.message);
+      }
     } catch (error) {
+      console.error('❌ Cache check error:', error);
       setCacheStatus({
         checking: false,
         ready: false,

@@ -180,6 +180,10 @@ wss.on('connection', (ws, req) => {
   ws.isAuthenticated = false;
   ws.userId = null;
   ws.userRole = null;
+  
+  // Store references for use in message handler
+  ws.db = db;
+  ws.serverManager = serverManager;
 
   ws.send(JSON.stringify({
     type: 'server_list',
@@ -189,6 +193,13 @@ wss.on('connection', (ws, req) => {
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message);
+      
+      // Defensive checks
+      if (!ws.db || !ws.serverManager) {
+        console.error('❌ WebSocket missing db or serverManager reference');
+        ws.send(JSON.stringify({ type: 'error', message: 'Server error: missing references' }));
+        return;
+      }
       
       if (data.type !== 'subscribe_console' && data.type !== 'get_stats') {
         console.log(`WebSocket message received: ${data.type}`);
@@ -247,7 +258,7 @@ wss.on('connection', (ws, req) => {
             return;
           }
           
-          const server = req.app.locals.db.getServer(serverId);
+          const server = ws.db.getServer(serverId);
           if (!server) {
             ws.send(JSON.stringify({ 
               type: 'error', 
@@ -288,13 +299,18 @@ wss.on('connection', (ws, req) => {
           console.log(`[COMMAND] User ${ws.userId} (${ws.userRole}) on server ${serverId}: ${sanitizedCommand}`);
           
           try {
-            serverManager.sendCommand(serverId, sanitizedCommand);
+            console.log(`📡 Routing command to serverManager...`);
+            const result = serverManager.sendCommand(serverId, sanitizedCommand);
+            console.log(`✅ Command acknowledged by serverManager:`, result);
+            
             ws.send(JSON.stringify({ 
               type: 'command_sent', 
               serverId: serverId,
-              command: sanitizedCommand 
+              command: sanitizedCommand,
+              result
             }));
           } catch (error) {
+            console.error(`❌ Command failed:`, error.message);
             ws.send(JSON.stringify({ 
               type: 'error', 
               message: 'Failed to send command: ' + error.message 

@@ -245,14 +245,18 @@ async extractGameZip(zipPath) {
     try {
       await fs.access(serverPath);
       jarPath = serverPath;
-      console.log(`✅ Found HytaleServer.jar`);
-    } catch {}
+      console.log(`✅ Found HytaleServer.jar at ${jarPath}`);
+    } catch (e) {
+      console.error(`❌ HytaleServer.jar not found at ${serverPath}:`, e.message);
+    }
     
     try {
       await fs.access(assetsPath);
       assetsZipPath = assetsPath;
-      console.log(`✅ Found Assets.zip`);
-    } catch {}
+      console.log(`✅ Found Assets.zip at ${assetsPath}`);
+    } catch (e) {
+      console.error(`❌ Assets.zip not found at ${assetsPath}:`, e.message);
+    }
     
     if (!jarPath || !assetsZipPath) {
       throw new Error('Server files not found after download');
@@ -262,20 +266,43 @@ async extractGameZip(zipPath) {
     const cacheJar = path.join(this.cacheDir, 'HytaleServer.jar');
     const cacheAssets = path.join(this.cacheDir, 'Assets.zip');
     
+    console.log(`📂 Copying ${jarPath} to ${cacheJar}`);
     await fs.copyFile(jarPath, cacheJar);
+    
+    console.log(`📂 Copying ${assetsPath} to ${cacheAssets}`);
     await fs.copyFile(assetsZipPath, cacheAssets);
     
-    console.log('✅ Files copied to cache');
+    // Verify files were copied
+    try {
+      const jarStats = await fs.stat(cacheJar);
+      const assetsStats = await fs.stat(cacheAssets);
+      console.log(`✅ Cache verified - JAR: ${(jarStats.size / 1024 / 1024).toFixed(2)} MB, Assets: ${(assetsStats.size / 1024 / 1024).toFixed(2)} MB`);
+    } catch (e) {
+      console.error(`❌ Failed to verify cache files:`, e.message);
+    }
     
     return { cacheJar, cacheAssets };
   }
 
   async isCacheReady() {
     try {
-      await fs.access(path.join(this.cacheDir, 'HytaleServer.jar'));
-      await fs.access(path.join(this.cacheDir, 'Assets.zip'));
+      const jarPath = path.join(this.cacheDir, 'HytaleServer.jar');
+      const assetsPath = path.join(this.cacheDir, 'Assets.zip');
+      
+      console.log(`🔍 Checking cache at ${this.cacheDir}`);
+      console.log(`  JAR: ${jarPath}`);
+      console.log(`  Assets: ${assetsPath}`);
+      
+      await fs.access(jarPath);
+      await fs.access(assetsPath);
+      
+      const jarStats = await fs.stat(jarPath);
+      const assetsStats = await fs.stat(assetsPath);
+      
+      console.log(`✅ Cache ready - JAR: ${(jarStats.size / 1024 / 1024).toFixed(2)} MB, Assets: ${(assetsStats.size / 1024 / 1024).toFixed(2)} MB`);
       return true;
-    } catch {
+    } catch (e) {
+      console.warn(`❌ Cache not ready:`, e.message);
       return false;
     }
   }

@@ -302,10 +302,11 @@ constructor(db) {
 
     console.log(`Starting server ${serverId}: java ${args.join(' ')}`);
 
-    // Start server process
+    // Start server process with proper stdio configuration
     const serverProcess = spawn('java', args, {
       cwd: serverInfo.server_path,
-      env: { ...process.env }
+      env: { ...process.env },
+      stdio: ['pipe', 'pipe', 'pipe']  // stdin, stdout, stderr as pipes
     });
 
     // IMPROVED: Hash-based deduplication for logs
@@ -426,6 +427,16 @@ constructor(db) {
       this.db.updateServerStatus(serverId, 'stopped');
     });
 
+    // Handle stdin errors
+    serverProcess.stdin.on('error', (error) => {
+      console.error(`Server ${serverId} stdin error:`, error.message);
+    });
+
+    // Handle stdin close
+    serverProcess.stdin.on('close', () => {
+      console.warn(`Server ${serverId} stdin closed`);
+    });
+
     return { success: true, message: 'Server started' };
   }
 
@@ -444,6 +455,9 @@ constructor(db) {
     if (readyPatterns.some(pattern => pattern.test(output))) {
       console.log(`Server ${serverId} is ready!`);
       this.db.updateServerStatus(serverId, 'running');
+      
+      // Update config.json with server name
+      this.updateServerConfigName(serverId);
       
       this.emit('update', {
         type: 'server_ready',
@@ -552,6 +566,37 @@ constructor(db) {
     }
   }
 
+  async updateServerConfigName(serverId) {
+    try {
+      const serverInfo = this.db.getServer(serverId);
+      if (!serverInfo) {
+        console.warn(`Server ${serverId} not found in database`);
+        return;
+      }
+
+      const configPath = path.join(serverInfo.server_path, 'config.json');
+      
+      // Try to read existing config
+      let config = {};
+      try {
+        const configData = await fs.readFile(configPath, 'utf-8');
+        config = JSON.parse(configData);
+      } catch (e) {
+        console.log(`📝 No existing config.json for server ${serverId}, creating new one`);
+      }
+
+      // Update with server name from database
+      config.name = serverInfo.name;
+      
+      // Write updated config back
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      console.log(`✅ Updated config.json for server ${serverId} with name: ${serverInfo.name}`);
+      
+    } catch (error) {
+      console.error(`❌ Failed to update config.json for server ${serverId}:`, error.message);
+    }
+  }
+
   async stopServer(serverId) {
     const serverInstance = this.servers.get(serverId);
     if (!serverInstance) {
@@ -616,8 +661,38 @@ constructor(db) {
       throw new Error('Server is not running');
     }
 
-    serverInstance.process.stdin.write(command + '\n');
-    return { success: true };
+    try {
+      console.log(`📤 Sending command to server ${serverId}: "${command}"`);
+      
+      if (!serverInstance.process) {
+        throw new Error('Server process is null');
+      }
+      
+      if (!serverInstance.process.stdin) {
+        throw new Error('Server stdin is not available');
+      }
+      
+      if (serverInstance.process.stdin.destroyed) {
+        throw new Error('Server stdin stream is destroyed');
+      }
+      
+      const written = serverInstance.process.stdin.write(command + '\n', (err) => {
+        if (err) {
+          console.error(`❌ Error writing to stdin: ${err.message}`);
+        }
+      });
+      
+      if (!written) {
+        console.warn(`⚠️ Write buffer full for server ${serverId}, command may be queued`);
+      } else {
+        console.log(`✅ Command sent successfully to server ${serverId}`);
+      }
+      
+      return { success: true, written };
+    } catch (error) {
+      console.error(`❌ Failed to send command to server ${serverId}:`, error.message);
+      throw error;
+    }
   }
 
   subscribeToConsole(serverId, ws) {

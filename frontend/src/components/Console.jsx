@@ -11,7 +11,23 @@ export default function Console({ serverId, serverStatus }) {
 
   useEffect(() => {
     setOutput([]);
-    websocket.subscribeToConsole(parseInt(serverId));
+    
+    // Subscribe with retry logic
+    const subscribeAttempts = [0];
+    const attemptSubscribe = () => {
+      if (websocket.isConnectedAndAuthenticated && websocket.isConnectedAndAuthenticated()) {
+        console.log(`📡 Subscribing to console for server ${serverId}`);
+        websocket.subscribeToConsole(parseInt(serverId));
+      } else if (subscribeAttempts[0] < 10) {
+        subscribeAttempts[0]++;
+        console.log(`⏳ WebSocket not ready yet (attempt ${subscribeAttempts[0]}/10), retrying...`);
+        setTimeout(attemptSubscribe, 300);
+      } else {
+        console.error('❌ Failed to subscribe to console after 10 attempts');
+      }
+    };
+    
+    attemptSubscribe();
 
     const unsubscribeHistory = websocket.on('console_history', (data) => {
       if (data.serverId === parseInt(serverId)) {
@@ -43,6 +59,14 @@ export default function Console({ serverId, serverStatus }) {
 
   const handleSendCommand = () => {
     if (!command.trim()) return;
+    
+    console.log(`📤 Sending command: ${command}`);
+    console.log(`WebSocket state:`, {
+      connected: websocket.ws ? 'yes' : 'no',
+      readyState: websocket.ws?.readyState,
+      authenticated: websocket.isAuthenticated
+    });
+    
     websocket.sendCommand(parseInt(serverId), command);
     setOutput((prev) => [...prev, `> ${command}\n`]);
     setCommandHistory((prev) => [command, ...prev]);
