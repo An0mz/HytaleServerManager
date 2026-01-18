@@ -48,6 +48,8 @@ export function useAuth() {
     isAuthenticated: !!user,
     login,
     logout,
-    checkAuth
+    checkAuth,
+    // Expose setUser so screens like Login can clear user during first-time setup
+    setUser
   };
 }
