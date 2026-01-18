@@ -133,6 +133,7 @@ router.post('/login', async (req, res) => {
     });
 
     res.json({
+      token, // Include token in response for WebSocket authentication
       user: {
         id: user.id,
         username: user.username,
@@ -198,6 +199,24 @@ router.put('/change-password', verifyToken, notTempAdmin, async (req, res) => {
       .write();
     
     res.json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get WebSocket token (for re-authentication after page refresh)
+router.get('/ws-token', verifyToken, (req, res) => {
+  try {
+    const jwt = require('jsonwebtoken');
+    const user = req.user;
+    
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      getJwtSecret(),
+      { expiresIn: '24h' }
+    );
+    
+    res.json({ token });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

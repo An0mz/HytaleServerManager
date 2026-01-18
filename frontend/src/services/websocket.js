@@ -6,17 +6,54 @@ class WebSocketService {
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
     this.isAuthenticated = false;
+    this.authToken = null; // Store token in memory
+  }
+
+  // Call this from the Login component after successful login
+  setAuthToken(token) {
+    this.authToken = token;
+    console.log('✅ Auth token set in WebSocketService');
+    // If already connected, authenticate now
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.authenticate();
+    }
+  }
+
+  getAuthToken() {
+    return this.authToken;
   }
 
   getTokenFromCookie() {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === 'token') {
-        return value;
-      }
+    // Try to get from memory first
+    if (this.authToken) {
+      console.log('Token found in memory');
+      return this.authToken;
     }
+    
+    // Try localStorage as fallback
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      console.log('Token found in localStorage');
+      this.authToken = storedToken;
+      return storedToken;
+    }
+    
+    console.log('No token found');
     return null;
+  }
+
+  authenticate() {
+    const token = this.getTokenFromCookie();
+    if (token && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      console.log('🔑 Sending authentication token to WebSocket');
+      this.send({
+        type: 'authenticate',
+        token: token
+      });
+    } else {
+      if (!token) console.warn('No token available for authentication');
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) console.warn('WebSocket not ready for authentication');
+    }
   }
 
   connect() {
@@ -31,7 +68,10 @@ class WebSocketService {
       try {
         const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const host = window.location.hostname || 'localhost';
-        const port = window.location.port || 3000;
+        
+        // In development (Vite), connect to backend on port 3000
+        // In production, use the same port as the page
+        const port = import.meta.env.DEV ? 3000 : (window.location.port || 3000);
         wsUrl = `${proto}://${host}:${port}`;
       } catch (e) {
         wsUrl = 'ws://localhost:3000';
@@ -52,15 +92,8 @@ class WebSocketService {
       }
       this.reconnectAttempts = 0;
 
-      const token = this.getTokenFromCookie();
-      if (token) {
-        this.send({
-          type: 'authenticate',
-          token: token
-        });
-      } else {
-        console.warn('No authentication token found');
-      }
+      // Attempt authentication
+      this.authenticate();
       
       this.notifyListeners('connected', {});
     };

@@ -109,10 +109,19 @@ async startDownload(execPath, outputZipPath) {
     console.log('📂 Exec:', absoluteExecPath);
     console.log('📂 Output:', absoluteOutputPath);
     
+    // Check if exec exists
+    fs.access(absoluteExecPath, fs.constants.X_OK).then(() => {
+      console.log('✅ Executable is accessible');
+    }).catch(err => {
+      console.warn('⚠️ Warning: Executable may not be accessible:', err.message);
+    });
+    
     // Run downloader with -download-path flag
     this.downloadProcess = spawn(absoluteExecPath, ['-download-path', absoluteOutputPath], {
       cwd: path.dirname(absoluteExecPath)
     });
+
+    console.log('✅ Process spawned, PID:', this.downloadProcess.pid);
 
     let stdout = '';
     let stderr = '';

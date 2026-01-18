@@ -190,6 +190,10 @@ wss.on('connection', (ws, req) => {
     try {
       const data = JSON.parse(message);
       
+      if (data.type !== 'subscribe_console' && data.type !== 'get_stats') {
+        console.log(`WebSocket message received: ${data.type}`);
+      }
+      
       switch (data.type) {
         case 'authenticate':
           try {
@@ -320,16 +324,20 @@ wss.on('connection', (ws, req) => {
           break;
           
         case 'start_hytale_download':
+          console.log('WebSocket message: start_hytale_download');
+          console.log(`Authenticated: ${ws.isAuthenticated}, Role: ${ws.userRole}`);
+          
           if (!ws.isAuthenticated || (ws.userRole !== 'admin' && ws.userRole !== 'temp_admin')) {
+            console.log('❌ Download rejected - auth check failed');
             ws.send(JSON.stringify({ type: 'error', message: 'Admin access required' }));
             return;
           }
           
-          console.log('Starting Hytale download...');
+          console.log('✅ Auth check passed, starting download...');
           serverManager.downloadHytaleFiles(ws).then(() => {
-            console.log('Hytale download finished');
+            console.log('✅ Hytale download finished');
           }).catch(err => {
-            console.error('Hytale download error:', err);
+            console.error('❌ Hytale download error:', err);
             ws.send(JSON.stringify({ type: 'error', message: 'Download failed: ' + err.message }));
           });
           break;

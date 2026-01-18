@@ -18,6 +18,7 @@ export default function CreateServer() {
   const [useDownloader, setUseDownloader] = useState(true);
   const [creating, setCreating] = useState(false);
   const [cacheStatus, setCacheStatus] = useState({ checking: true, ready: false });
+  const [wsStatus, setWsStatus] = useState({ connected: false, authenticated: false });
   
   // OAuth Download State
   const [downloading, setDownloading] = useState(false);
@@ -33,43 +34,58 @@ export default function CreateServer() {
     const ws = WebSocketService.connect();
 
     if (ws) {
+      // Track connection/auth status
+      const statusCheckInterval = setInterval(() => {
+        setWsStatus({
+          connected: ws.readyState === WebSocket.OPEN,
+          authenticated: WebSocketService.isAuthenticated
+        });
+      }, 200);
+
       ws.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data);
-      
-      switch (message.type) {
-        case 'hytale_oauth_url':
-          setOauthUrl(message.data);
-          setOauthModal(true);
-          break;
-          
-        case 'hytale_oauth_code':
-          setOauthCode(message.data);
-          break;
-          
-        case 'hytale_progress':
-          setDownloadProgress(prev => [...prev, message.data]);
-          break;
-          
-        case 'hytale_complete':
-          setDownloading(false);
-          setOauthModal(false);
-              
-          // Wait a bit for files to finish copying
-          setTimeout(() => {
-            checkCacheStatus();
-          }, 1000);
-          
-          alert('✅ Download complete! Cache is ready.');
-          break;
-          
-        case 'hytale_failed':
-          setDownloading(false);
-          setOauthModal(false);
-          alert('❌ Download failed: ' + message.data);
-          break;
-      }
-    });
+        const message = JSON.parse(event.data);
+        
+        // Update status when authenticated
+        if (message.type === 'authenticated') {
+          setWsStatus({ connected: true, authenticated: true });
+        }
+        
+        switch (message.type) {
+          case 'hytale_oauth_url':
+            setOauthUrl(message.data);
+            setOauthModal(true);
+            break;
+            
+          case 'hytale_oauth_code':
+            setOauthCode(message.data);
+            break;
+            
+          case 'hytale_progress':
+            setDownloadProgress(prev => [...prev, message.data]);
+            break;
+            
+          case 'hytale_complete':
+            setDownloading(false);
+            setOauthModal(false);
+                
+            // Wait a bit for files to finish copying
+            setTimeout(() => {
+              checkCacheStatus();
+            }, 1000);
+            
+            alert('✅ Download complete! Cache is ready.');
+            break;
+            
+          case 'hytale_failed':
+            setDownloading(false);
+            setOauthModal(false);
+            alert('❌ Download failed: ' + message.data);
+            break;
+        }
+      });
+
       return () => {
+        clearInterval(statusCheckInterval);
         try { ws.close(); } catch (e) {}
       };
     } else {
@@ -102,14 +118,29 @@ export default function CreateServer() {
     setOauthUrl('');
     setOauthCode('');
     
-    const ws = WebSocketService.getConnection();
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'start_hytale_download' }));
-    } else {
-      console.error('WebSocket not connected');
-      alert('WebSocket not connected — cannot start download');
-      setDownloading(false);
-    }
+    console.log('Download button clicked');
+    console.log('WebSocket state:', {
+      connected: WebSocketService.ws ? 'yes' : 'no',
+      readyState: WebSocketService.ws?.readyState,
+      isAuthenticated: WebSocketService.isAuthenticated,
+      isConnectedAndAuthenticated: WebSocketService.isConnectedAndAuthenticated()
+    });
+
+    const attemptDownload = (retryCount = 0) => {
+      if (WebSocketService.isConnectedAndAuthenticated()) {
+        console.log('✅ WebSocket ready, sending download command');
+        WebSocketService.send({ type: 'start_hytale_download' });
+      } else if (retryCount < 5) {
+        console.log(`⏳ Waiting for WebSocket auth (retry ${retryCount + 1}/5)...`);
+        setTimeout(() => attemptDownload(retryCount + 1), 500);
+      } else {
+        console.error('❌ WebSocket failed to authenticate after 5 retries');
+        setDownloading(false);
+        alert('WebSocket connection not ready. Please refresh the page and try again.');
+      }
+    };
+
+    attemptDownload();
   };
 
   const copyToClipboard = (text) => {
@@ -316,6 +347,14 @@ export default function CreateServer() {
                     <div>Assets.zip: {cacheStatus.files.assets.sizeFormatted}</div>
                   </div>
                 )}
+                
+                {/* WebSocket Status Indicator */}
+                <div className="mt-3 text-xs flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${wsStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-gray-400">
+                    {wsStatus.connected && wsStatus.authenticated ? '✅ Ready' : wsStatus.connected ? '🔄 Authenticating...' : '❌ Connecting...'}
+                  </span>
+                </div>
                 
                 <div className="mt-3 flex gap-2">
                   {!cacheStatus.ready && (

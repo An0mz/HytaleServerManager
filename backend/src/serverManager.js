@@ -120,17 +120,36 @@ constructor(db) {
 
   async downloadHytaleFiles(ws = null) {
     console.log('🎮 Starting Hytale download with OAuth...');
+    console.log(`WebSocket provided: ${ws ? 'yes' : 'no'}`);
+    if (ws) {
+      console.log(`WebSocket state: ${ws.readyState}, is open: ${ws.readyState === 1}`);
+    }
 
     try {
       // Check if already cached
-      if (await this.hytaleDownloader.isCacheReady()) {
+      const cacheReady = await this.hytaleDownloader.isCacheReady();
+      console.log(`Cache ready status: ${cacheReady}`);
+      
+      if (cacheReady) {
         console.log('✅ Files already cached');
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify({ type: 'hytale_complete' }));
+        }
         return { success: true, cached: true };
       }
 
+      // Remove old listeners to prevent duplicates
+      this.hytaleDownloader.removeAllListeners('oauth-url');
+      this.hytaleDownloader.removeAllListeners('oauth-code');
+      this.hytaleDownloader.removeAllListeners('progress');
+      this.hytaleDownloader.removeAllListeners('download-complete');
+
       // Set up event handlers for WebSocket broadcasting
       if (ws && ws.readyState === 1) {
+        console.log('Setting up WebSocket event handlers...');
+        
         this.hytaleDownloader.on('oauth-url', (url) => {
+          console.log('Sending OAuth URL to client');
           ws.send(JSON.stringify({
             type: 'hytale_oauth_url',
             data: url
@@ -138,6 +157,7 @@ constructor(db) {
         });
 
         this.hytaleDownloader.on('oauth-code', (code) => {
+          console.log('Sending OAuth code to client');
           ws.send(JSON.stringify({
             type: 'hytale_oauth_code',
             data: code
@@ -145,6 +165,7 @@ constructor(db) {
         });
 
         this.hytaleDownloader.on('progress', (message) => {
+          console.log('Sending progress to client:', message);
           ws.send(JSON.stringify({
             type: 'hytale_progress',
             data: message
@@ -152,6 +173,7 @@ constructor(db) {
         });
 
         this.hytaleDownloader.on('download-complete', () => {
+          console.log('Sending complete notification to client');
           ws.send(JSON.stringify({
             type: 'hytale_complete'
           }));
@@ -159,7 +181,9 @@ constructor(db) {
       }
 
       // Start download
+      console.log('Calling downloadWithOAuth...');
       const result = await this.hytaleDownloader.downloadWithOAuth();
+      console.log('downloadWithOAuth completed successfully');
       
       return {
         success: true,
