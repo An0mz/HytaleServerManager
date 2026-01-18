@@ -3,24 +3,34 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   RocketLaunchIcon, 
   UserCircleIcon, 
-  UsersIcon, // ✅ ADD THIS
+  UsersIcon,
   Cog6ToothIcon, 
   ArrowRightOnRectangleIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  MoonIcon,
+  SunIcon,
+  SwatchIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme, currentTheme, changeTheme, themes } = useTheme();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const themeDropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target)) {
+        setThemeDropdownOpen(false);
       }
     };
 
@@ -33,8 +43,14 @@ export default function Header() {
     navigate('/login');
   };
 
+  const getThemeIcon = () => {
+    if (currentTheme === 'light') return <SunIcon className={`h-5 w-5 ${theme.text}`} />;
+    if (currentTheme === 'orange') return <SwatchIcon className={`h-5 w-5 ${theme.text}`} />;
+    return <MoonIcon className={`h-5 w-5 ${theme.text}`} />;
+  };
+
   return (
-    <header className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-40">
+    <header className={`${theme.bgSecondary} backdrop-blur-sm border-b ${theme.border} sticky top-0 z-40`}>
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Left - Logo and Title */}
@@ -44,31 +60,69 @@ export default function Header() {
             </div>
             <div>
               <h1 className="text-xl font-bold gradient-text">Hytale Server Manager</h1>
-              <p className="text-xs text-gray-500">v1.1.0</p>
+              <p className="text-xs text-gray-500">v1.1.1</p>
             </div>
           </Link>
 
-          {/* Right - User Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Right - Theme Switcher and User Dropdown */}
+          <div className="flex items-center space-x-3">
+            {/* Theme Switcher */}
+            <div className="relative" ref={themeDropdownRef}>
+              <button
+                onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+                className={`p-2 rounded-lg ${theme.bgTertiary} border ${theme.border} hover:opacity-80 transition-all`}
+                title="Change Theme"
+              >
+                {getThemeIcon()}
+              </button>
+
+              {themeDropdownOpen && (
+                <div className={`absolute right-0 mt-2 w-48 ${theme.card} rounded-xl shadow-2xl overflow-hidden`}>
+                  <div className={`px-3 py-2 border-b ${theme.border} ${theme.bgTertiary}`}>
+                    <p className={`text-xs font-semibold ${theme.textSecondary}`}>Select Theme</p>
+                  </div>
+                  <div className="py-1">
+                    {Object.entries(themes).map(([key, themeOption]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          changeTheme(key);
+                          setThemeDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm ${theme.textSecondary} hover:${theme.bgTertiary} flex items-center justify-between transition-colors`}
+                      >
+                        <span>{themeOption.name}</span>
+                        {currentTheme === key && (
+                          <span className={theme.accentText}>✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* User Dropdown */}
+            <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center space-x-3 px-4 py-2 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition-all border border-gray-700/50 hover:border-cyan-500/30"
+              className={`flex items-center space-x-3 px-4 py-2 rounded-xl ${theme.bgTertiary} border ${theme.border} hover:opacity-80 transition-all`}
             >
-              <UserCircleIcon className="h-6 w-6 text-cyan-400" />
+              <UserCircleIcon className={`h-6 w-6 ${theme.accentText}`} />
               <div className="text-left">
-                <p className="text-sm font-semibold text-white">{user?.username || 'User'}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role || 'Admin'}</p>
+                <p className={`text-sm font-semibold ${theme.text}`}>{user?.username || 'User'}</p>
+                <p className={`text-xs ${theme.textSecondary} capitalize`}>{user?.role || 'Admin'}</p>
               </div>
-              <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDownIcon className={`h-4 w-4 ${theme.textSecondary} transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+              <div className={`absolute right-0 mt-2 w-56 ${theme.card} border ${theme.border} rounded-xl shadow-2xl overflow-hidden`}>
                 {/* User Info Section */}
-                <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/50">
-                  <p className="text-sm font-semibold text-white">{user?.username || 'User'}</p>
-                  <p className="text-xs text-gray-400">{user?.email || 'No email set'}</p>
+                <div className={`px-4 py-3 border-b ${theme.border} ${theme.bgTertiary}`}>
+                  <p className={`text-sm font-semibold ${theme.text}`}>{user?.username || 'User'}</p>
+                  <p className={`text-xs ${theme.textSecondary}`}>{user?.email || 'No email set'}</p>
                 </div>
 
                 {/* Menu Items */}
@@ -77,9 +131,9 @@ export default function Header() {
                     <Link
                       to="/settings"
                       onClick={() => setDropdownOpen(false)}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white flex items-center space-x-3 transition-colors"
+                      className={`w-full px-4 py-2 text-left text-sm ${theme.textSecondary} hover:${theme.bgTertiary} hover:${theme.text} flex items-center space-x-3 transition-colors`}
                     >
-                      <Cog6ToothIcon className="h-5 w-5 text-gray-400" />
+                      <Cog6ToothIcon className={`h-5 w-5 ${theme.textSecondary}`} />
                       <span>Settings</span>
                     </Link>
                   )}
@@ -89,9 +143,9 @@ export default function Header() {
                     <Link
                       to="/users"
                       onClick={() => setDropdownOpen(false)}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white flex items-center space-x-3 transition-colors"
+                      className={`w-full px-4 py-2 text-left text-sm ${theme.textSecondary} hover:${theme.bgTertiary} hover:${theme.text} flex items-center space-x-3 transition-colors`}
                     >
-                      <UsersIcon className="h-5 w-5 text-gray-400" />
+                      <UsersIcon className={`h-5 w-5 ${theme.textSecondary}`} />
                       <span>Users</span>
                     </Link>
                   )}
@@ -109,13 +163,14 @@ export default function Header() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 py-2 border-t border-gray-700 bg-gray-800/30">
-                  <p className="text-xs text-gray-500 text-center">
-                    Hytale Server Manager v1.1.0
+                <div className={`px-4 py-2 border-t ${theme.border} ${theme.bgTertiary}`}>
+                  <p className={`text-xs ${theme.textSecondary} text-center`}>
+                    Hytale Server Manager v1.1.1
                   </p>
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

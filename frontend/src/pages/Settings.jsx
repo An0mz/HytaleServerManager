@@ -7,11 +7,13 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
 import Header from './Header';
 import Users from './Users';
 
 export default function Settings() {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -74,41 +76,41 @@ export default function Settings() {
   return (
     <>
       <Header />
-      <div className="min-h-screen p-6">
+      <div className={`min-h-screen ${theme.bg} p-6`}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="card mb-6">
+          <div className={theme.card + " mb-6"}>
             <div className="px-6 py-4">
               <div className="flex items-center space-x-4">
                 <Link 
                   to="/" 
-                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                  className={`p-2 hover:${theme.bgTertiary} rounded-lg transition-colors`}
                 >
-                  <ArrowLeftIcon className="h-5 w-5 text-gray-400" />
+                  <ArrowLeftIcon className={`h-5 w-5 ${theme.textSecondary}`} />
                 </Link>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Account Settings</h1>
-                  <p className="text-sm text-gray-400">Manage your account preferences</p>
+                  <h1 className={`text-2xl font-bold ${theme.text}`}>Account Settings</h1>
+                  <p className={`text-sm ${theme.textSecondary}`}>Manage your account preferences</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* User Info */}
-          <div className="card mb-6">
-            <div className="px-6 py-4 border-b border-gray-700/50">
-              <h2 className="text-lg font-semibold text-white">Account Information</h2>
+          <div className={theme.card + " mb-6"}>
+            <div className={`px-6 py-4 border-b ${theme.border}`}>
+              <h2 className={`text-lg font-semibold ${theme.text}`}>Account Information</h2>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Username</label>
-                <div className="px-4 py-3 bg-gray-800 rounded-lg text-white">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Username</label>
+                <div className={`px-4 py-3 ${theme.bgTertiary} rounded-lg ${theme.text}`}>
                   {user?.username}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Role</label>
-                <div className="px-4 py-3 bg-gray-800 rounded-lg text-white capitalize">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>Role</label>
+                <div className={`px-4 py-3 ${theme.bgTertiary} rounded-lg ${theme.text} capitalize`}>
                   {user?.role}
                 </div>
               </div>
@@ -116,11 +118,11 @@ export default function Settings() {
           </div>
 
           {/* Change Password */}
-          <div className="card">
-            <div className="px-6 py-4 border-b border-gray-700/50">
+          <div className={theme.card}>
+            <div className={`px-6 py-4 border-b ${theme.border}`}>
               <div className="flex items-center space-x-3">
-                <KeyIcon className="h-6 w-6 text-cyan-400" />
-                <h2 className="text-lg font-semibold text-white">Change Password</h2>
+                <KeyIcon className={`h-6 w-6 ${theme.accentText}`} />
+                <h2 className={`text-lg font-semibold ${theme.text}`}>Change Password</h2>
               </div>
             </div>
 
@@ -138,7 +140,7 @@ export default function Settings() {
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                   Current Password
                 </label>
                 <input
@@ -146,14 +148,14 @@ export default function Settings() {
                   required
                   value={formData.currentPassword}
                   onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                  className="input-modern"
+                  className={theme.input + " w-full px-4 py-3 rounded-xl focus:ring-2 focus:outline-none transition-all duration-200"}
                   placeholder="Enter your current password"
                   autoComplete="current-password"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                   New Password
                 </label>
                 <input
@@ -161,15 +163,15 @@ export default function Settings() {
                   required
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                  className="input-modern"
+                  className={theme.input + " w-full px-4 py-3 rounded-xl focus:ring-2 focus:outline-none transition-all duration-200"}
                   placeholder="Enter new password"
                   autoComplete="new-password"
                 />
-                <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                <p className={`text-xs ${theme.textSecondary} mt-1`}>Minimum 6 characters</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                   Confirm New Password
                 </label>
                 <input
@@ -177,7 +179,7 @@ export default function Settings() {
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="input-modern"
+                  className={theme.input + " w-full px-4 py-3 rounded-xl focus:ring-2 focus:outline-none transition-all duration-200"}
                   placeholder="Confirm new password"
                   autoComplete="new-password"
                 />

@@ -4,14 +4,17 @@ import {  ArrowLeftIcon, CloudArrowDownIcon, CheckCircleIcon, ExclamationTriangl
   XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import WebSocketService from '../services/websocket';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function CreateServer() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     port: 5520,
     maxPlayers: 20,
     maxViewRadius: 16,
+    autoStart: false,
     jvmArgs: ''
   });
   const [files, setFiles] = useState({ jar: null, assets: null });
@@ -250,25 +253,25 @@ export default function CreateServer() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className={`min-h-screen ${theme.bg} p-6`}>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="card mb-6">
+        <div className={theme.card + " mb-6"}>
           <div className="px-6 py-4 flex items-center space-x-4">
-            <Link to="/" className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-              <ArrowLeftIcon className="h-5 w-5 text-gray-400" />
+            <Link to="/" className={`p-2 hover:${theme.bgTertiary} rounded-lg transition-colors`}>
+              <ArrowLeftIcon className={`h-5 w-5 ${theme.textSecondary}`} />
             </Link>
-            <h1 className="text-2xl font-bold text-white">Create New Server</h1>
+            <h1 className={`text-2xl font-bold ${theme.text}`}>Create New Server</h1>
           </div>
         </div>
 
         {/* OAuth Modal */}
         {oauthModal && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 rounded-2xl border border-cyan-500/30 max-w-2xl w-full p-6 relative">
+            <div className={`${theme.card} rounded-2xl border border-cyan-500/30 max-w-2xl w-full p-6 relative`}>
               <button
                 onClick={handleCancelDownload}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                className={`absolute top-4 right-4 ${theme.textSecondary} hover:${theme.text}`}
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -281,7 +284,7 @@ export default function CreateServer() {
                 {/* URL */}
                 {oauthUrl && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Authorization URL:
                     </label>
                     <div className="flex gap-2">
@@ -289,7 +292,7 @@ export default function CreateServer() {
                         href={oauthUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-4 py-3 bg-gray-800 rounded-lg text-cyan-400 hover:text-cyan-300 break-all"
+                        className={`flex-1 px-4 py-3 ${theme.bgTertiary} rounded-lg text-cyan-400 hover:text-cyan-300 break-all`}
                       >
                         {oauthUrl}
                       </a>
@@ -306,11 +309,11 @@ export default function CreateServer() {
                 {/* Code */}
                 {oauthCode && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Authorization Code:
                     </label>
                     <div className="flex gap-2">
-                      <div className="flex-1 px-6 py-4 bg-gray-800 rounded-lg text-3xl font-mono text-center text-cyan-400">
+                      <div className={`flex-1 px-6 py-4 ${theme.bgTertiary} rounded-lg text-3xl font-mono text-center text-cyan-400`}>
                         {oauthCode}
                       </div>
                       <button
@@ -326,7 +329,7 @@ export default function CreateServer() {
                 {/* Instructions */}
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
                   <h3 className="font-semibold text-blue-400 mb-2">📋 Instructions:</h3>
-                  <ol className="space-y-1 text-gray-300 text-sm list-decimal list-inside">
+                  <ol className={`space-y-1 ${theme.textSecondary} text-sm list-decimal list-inside`}>
                     <li>Click the URL above to open it in a new tab</li>
                     <li>Login with your Hytale account</li>
                     <li>Enter the authorization code: <span className="font-mono text-cyan-400">{oauthCode}</span></li>
@@ -337,9 +340,9 @@ export default function CreateServer() {
                 
                 {/* Progress Log */}
                 {downloadProgress.length > 0 && (
-                  <div className="bg-gray-800 rounded-lg p-4 max-h-48 overflow-y-auto">
-                    <h4 className="font-semibold text-gray-300 mb-2">Download Progress:</h4>
-                    <div className="font-mono text-xs text-gray-400 space-y-1">
+                  <div className={`${theme.bgTertiary} rounded-lg p-4 max-h-48 overflow-y-auto`}>
+                    <h4 className={`font-semibold ${theme.textSecondary} mb-2`}>Download Progress:</h4>
+                    <div className={`font-mono text-xs ${theme.textSecondary} space-y-1`}>
                       {downloadProgress.slice(-10).map((msg, i) => (
                         <div key={i}>{msg}</div>
                       ))}
@@ -368,10 +371,10 @@ export default function CreateServer() {
                 <p className={`font-semibold ${cacheStatus.ready ? 'text-emerald-400' : 'text-yellow-400'}`}>
                   {cacheStatus.ready ? '✅ Cache Ready!' : '⚠️ Cache Not Ready'}
                 </p>
-                <p className="text-sm text-gray-300 mt-1">{cacheStatus.message}</p>
+                <p className={`text-sm ${theme.textSecondary} mt-1`}>{cacheStatus.message}</p>
                 
                 {cacheStatus.ready && cacheStatus.files && (
-                  <div className="mt-2 text-xs text-gray-400">
+                  <div className={`mt-2 text-xs ${theme.textSecondary}`}>
                     <div>HytaleServer.jar: {cacheStatus.files.jar.sizeFormatted}</div>
                     <div>Assets.zip: {cacheStatus.files.assets.sizeFormatted}</div>
                   </div>
@@ -380,7 +383,7 @@ export default function CreateServer() {
                 {/* WebSocket Status Indicator */}
                 <div className="mt-3 text-xs flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${wsStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-gray-400">
+                  <span className={theme.textSecondary}>
                     {wsStatus.connected && wsStatus.authenticated ? '✅ Ready' : wsStatus.connected ? '🔄 Authenticating...' : '❌ Connecting...'}
                   </span>
                 </div>
@@ -414,7 +417,7 @@ export default function CreateServer() {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Server Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Server Name *
               </label>
               <input
@@ -430,7 +433,7 @@ export default function CreateServer() {
 
             {/* Port */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Server Port *
               </label>
               <input
@@ -448,7 +451,7 @@ export default function CreateServer() {
 
             {/* Max Players */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Max Players
               </label>
               <input
@@ -465,7 +468,7 @@ export default function CreateServer() {
 
             {/* View Radius */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 Max View Radius (chunks)
               </label>
               <input
@@ -482,7 +485,7 @@ export default function CreateServer() {
 
             {/* JVM Arguments */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                 JVM Arguments (Optional)
               </label>
               <input
@@ -498,9 +501,24 @@ export default function CreateServer() {
               </p>
             </div>
 
+            {/* Auto Start on Boot */}
+            <div className={`flex items-center space-x-3 p-4 ${theme.bgTertiary}/50 rounded-lg border ${theme.border}`}>
+              <input
+                type="checkbox"
+                id="autoStart"
+                checked={formData.autoStart}
+                onChange={(e) => setFormData({ ...formData, autoStart: e.target.checked })}
+                className="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500 focus:ring-2"
+              />
+              <label htmlFor="autoStart" className="flex-1">
+                <div className={`text-sm font-semibold ${theme.textSecondary}`}>Auto-start on container boot</div>
+                <div className="text-xs text-gray-500">Automatically start this server when the container starts</div>
+              </label>
+            </div>
+
             {/* Hytale Files */}
-            <div className="border-t border-gray-700 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Hytale Server Files</h3>
+            <div className={`border-t ${theme.border} pt-6`}>
+              <h3 className={`text-lg font-semibold ${theme.text} mb-4`}>Hytale Server Files</h3>
               
               {/* Auto Download Option */}
               <div className={`rounded-xl p-4 mb-4 border ${
@@ -519,7 +537,7 @@ export default function CreateServer() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <CloudArrowDownIcon className="h-5 w-5 text-cyan-400" />
-                      <span className="font-semibold text-white">Use Cached Files</span>
+                      <span className={`font-semibold ${theme.text}`}>Use Cached Files</span>
                       {cacheStatus.ready && (
                         <span className="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">
                           ⚡ Ready
@@ -531,7 +549,7 @@ export default function CreateServer() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className={`text-sm ${theme.textSecondary} mt-1`}>
                       {cacheStatus.ready 
                         ? 'Cache is ready! Server files will be automatically copied (takes 2-5 seconds)'
                         : useDownloader
@@ -547,26 +565,26 @@ export default function CreateServer() {
               {!useDownloader && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       HytaleServer.jar *
                     </label>
                     <input
                       type="file"
                       accept=".jar"
                       onChange={(e) => handleFileChange(e, 'jar')}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer"
+                      className={`w-full px-4 py-3 ${theme.bgTertiary}/50 border ${theme.border} rounded-xl ${theme.text} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className={`block text-sm font-semibold ${theme.textSecondary} mb-2`}>
                       Assets.zip *
                     </label>
                     <input
                       type="file"
                       accept=".zip"
                       onChange={(e) => handleFileChange(e, 'assets')}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer"
+                      className={`w-full px-4 py-3 ${theme.bgTertiary}/50 border ${theme.border} rounded-xl ${theme.text} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer`}
                     />
                   </div>
                 </div>

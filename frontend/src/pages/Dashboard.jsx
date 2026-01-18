@@ -14,8 +14,10 @@ import {
 import * as api from '../services/api';
 import websocket from '../services/websocket';
 import Header from './Header';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Dashboard() {
+  const { theme } = useTheme();
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [wsConnected, setWsConnected] = useState(false);
@@ -133,7 +135,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-500"></div>
       </div>
     );
@@ -142,14 +144,14 @@ export default function Dashboard() {
   return (
       <>
     <Header />
-        <div className="min-h-screen p-6">
+        <div className={`min-h-screen ${theme.bg} p-6`}>
           {/* Stats Bar */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="card p-4">
+            <div className={`${theme.card} p-4`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Servers</p>
-                  <p className="text-3xl font-bold text-white">{stats.total}</p>
+                  <p className={`${theme.textSecondary} text-sm`}>Servers</p>
+                  <p className={`text-3xl font-bold ${theme.text}`}>{stats.total}</p>
                   <p className="text-emerald-400 text-xs mt-1">
                     {stats.running} online • {stats.offline} offline
                   </p>
@@ -158,39 +160,39 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="card p-4">
+            <div className={`${theme.card} p-4`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Players</p>
-                  <p className="text-3xl font-bold text-white">{stats.players}</p>
+                  <p className={`${theme.textSecondary} text-sm`}>Players</p>
+                  <p className={`text-3xl font-bold ${theme.text}`}>{stats.players}</p>
                   <p className="text-blue-400 text-xs mt-1">{stats.maxPlayers} Max</p>
                 </div>
                 <UsersIcon className="h-10 w-10 text-blue-400" />
               </div>
             </div>
 
-            <div className="card p-4">
+            <div className={`${theme.card} p-4`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
                   <div>
-                    <p className="text-gray-400 text-sm">CPU Usage</p>
-                    <p className="text-3xl font-bold text-white">{stats.cpuTotal}%</p>
-                    <p className="text-gray-500 text-xs mt-1">Across all servers</p>
+                    <p className={`${theme.textSecondary} text-sm`}>CPU Usage</p>
+                    <p className={`text-3xl font-bold ${theme.text}`}>{stats.cpuTotal}%</p>
+                    <p className={`${theme.textSecondary} text-xs mt-1`}>Across all servers</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm">Memory</p>
-                    <p className="text-3xl font-bold text-white">{stats.memoryTotal} MB</p>
-                    <p className="text-gray-500 text-xs mt-1">Total across servers</p>
+                    <p className={`${theme.textSecondary} text-sm`}>Memory</p>
+                    <p className={`text-3xl font-bold ${theme.text}`}>{stats.memoryTotal} MB</p>
+                    <p className={`${theme.textSecondary} text-xs mt-1`}>Total across servers</p>
                   </div>
                 </div>
                 <CpuChipIcon className="h-10 w-10 text-purple-400" />
               </div>
             </div>
 
-            <div className="card p-4">
+            <div className={`${theme.card} p-4`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Connection</p>
+                  <p className={`${theme.textSecondary} text-sm`}>Connection</p>
                   <p className={`text-xl font-bold mt-1 ${wsConnected ? 'text-emerald-400' : 'text-red-400'}`}>
                     {wsConnected ? 'Live' : 'Offline'}
                   </p>
@@ -201,16 +203,16 @@ export default function Dashboard() {
           </div>
 
           {/* Server List */}
-          <div className="card">
-            <div className="px-6 py-4 border-b border-gray-700/50 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">All Servers</h2>
+          <div className={theme.card}>
+            <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between`}>
+              <h2 className={`text-xl font-bold ${theme.text}`}>All Servers</h2>
               <div className="flex items-center space-x-4">
                 <input
                   type="text"
                   placeholder="Search servers..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                  className={theme.input + " px-4 py-2 rounded-lg focus:ring-2 focus:outline-none transition-all"}
                 />
                 <Link
                   to="/create"
@@ -224,23 +226,23 @@ export default function Dashboard() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-800/50 border-b border-gray-700/50">
+                <thead className={`${theme.bgTertiary} border-b ${theme.border}`}>
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Server</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Actions</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">CPU Usage</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Memory Usage</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Server Dir Size</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Players</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Status</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Server</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Actions</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>CPU Usage</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Memory Usage</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Server Dir Size</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Players</th>
+                    <th className={`px-6 py-4 text-left text-sm font-semibold ${theme.textSecondary}`}>Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700/30">
+                <tbody className={`divide-y ${theme.border}`}>
                   {filteredServers.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="px-6 py-12 text-center">
-                        <CircleStackIcon className="h-12 w-12 text-gray-600 mx-auto mb-3" />
-                        <p className="text-gray-500">No servers found</p>
+                        <CircleStackIcon className={`h-12 w-12 ${theme.textSecondary} mx-auto mb-3`} />
+                        <p className={theme.textSecondary}>No servers found</p>
                         <Link to="/create" className="text-cyan-400 hover:text-cyan-300 text-sm mt-2 inline-block">
                           Create your first server
                         </Link>
@@ -248,11 +250,11 @@ export default function Dashboard() {
                     </tr>
                   ) : (
                     filteredServers.map((server) => (
-                      <tr key={server.id} className="hover:bg-gray-800/30 transition-colors">
+                      <tr key={server.id} className={`hover:${theme.bgTertiary} transition-colors`}>
                         <td className="px-6 py-4">
                           <Link to={`/server/${server.id}`} className="block">
-                            <p className="text-cyan-400 font-medium hover:text-cyan-300">{server.name}</p>
-                            <p className="text-sm text-gray-500">Port {server.port}</p>
+                            <p className={`${theme.accentText} font-medium hover:text-cyan-300`}>{server.name}</p>
+                            <p className={`text-sm ${theme.textSecondary}`}>Port {server.port}</p>
                           </Link>
                         </td>
                         <td className="px-6 py-4">
@@ -285,7 +287,7 @@ export default function Dashboard() {
                             )}
                             <button
                               onClick={(e) => handleDelete(server.id, e)}
-                              className="p-2 rounded-lg bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 transition-all"
+                              className={`p-2 rounded-lg ${theme.bgTertiary} ${theme.textSecondary} hover:bg-red-600/20 hover:text-red-400 transition-all`}
                               title="Delete"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -293,41 +295,41 @@ export default function Dashboard() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-white">{typeof server.stats?.cpu !== 'undefined' ? `${server.stats.cpu}%` : '0%'}</p>
+                          <p className={theme.text}>{typeof server.stats?.cpu !== 'undefined' ? `${server.stats.cpu}%` : '0%'}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-white">{typeof server.stats?.memory !== 'undefined' ? `${server.stats.memory} MB` : '-'}</p>
+                          <p className={theme.text}>{typeof server.stats?.memory !== 'undefined' ? `${server.stats.memory} MB` : '-'}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-white">{server.dirSizeFormatted || '-'}</p>
+                          <p className={theme.text}>{server.dirSizeFormatted || '-'}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-white">{server.players?.length || 0} / {server.max_players} Max</p>
+                          <p className={theme.text}>{server.players?.length || 0} / {server.max_players} Max</p>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-3">
                             {server.status === 'running' && (
                               <>
                                 <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                                <span className="text-sm font-semibold text-white">Online</span>
+                                <span className={`text-sm font-semibold ${theme.text}`}>Online</span>
                               </>
                             )}
                             {server.status === 'starting' && (
                               <>
                                 <span className="h-3 w-3 rounded-full bg-yellow-400" />
-                                <span className="text-sm font-semibold text-white">Starting</span>
+                                <span className={`text-sm font-semibold ${theme.text}`}>Starting</span>
                               </>
                             )}
                             {server.status === 'stopping' && (
                               <>
                                 <span className="h-3 w-3 rounded-full bg-orange-400" />
-                                <span className="text-sm font-semibold text-white">Shutting down</span>
+                                <span className={`text-sm font-semibold ${theme.text}`}>Shutting down</span>
                               </>
                             )}
                             {!(server.status === 'running' || server.status === 'starting' || server.status === 'stopping') && (
                               <>
                                 <span className="h-3 w-3 rounded-full bg-red-400" />
-                                <span className="text-sm font-semibold text-white">Offline</span>
+                                <span className={`text-sm font-semibold ${theme.text}`}>Offline</span>
                               </>
                             )}
                           </div>
