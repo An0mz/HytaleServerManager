@@ -16,6 +16,7 @@ services:
       - DATABASE_PATH=/app/data/hytale-manager.json
       - SERVERS_PATH=/app/data/servers
       - BACKUPS_PATH=/app/data/backups
+      - HYTALE_CACHE_PATH=/app/data/cache/hytale
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped

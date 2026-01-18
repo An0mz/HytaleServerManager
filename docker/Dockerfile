@@ -36,7 +36,7 @@ RUN cd frontend && npm run build
 RUN cp -r frontend/dist backend/public
 
 # Create necessary directories under /app/data for single volume mount
-RUN mkdir -p /app/data/servers /app/data/backups
+RUN mkdir -p /app/data/servers /app/data/backups /app/data/cache/hytale
 
 # Expose ports
 EXPOSE 3000 5520-5530/udp

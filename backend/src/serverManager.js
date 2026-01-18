@@ -16,9 +16,9 @@ constructor(db) {
   this.consoleSubscribers = new Map();
   this.statsInterval = null;
   
-  // Use /app/cache for Docker/Linux, ./cache for Windows/Mac
-  const defaultCachePath = process.platform === 'linux'
-    ? '/app/cache/hytale'
+  // Use /app/data/cache for persistence in Docker, ./cache for local dev
+  const defaultCachePath = process.env.NODE_ENV === 'production'
+    ? '/app/data/cache/hytale'
     : './cache/hytale';
   
   this.hytaleCache = process.env.HYTALE_CACHE_PATH || defaultCachePath;
