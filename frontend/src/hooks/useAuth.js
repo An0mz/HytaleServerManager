@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import api from '../services/api';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -13,9 +11,7 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        withCredentials: true
-      });
+      const response = await api.get('/auth/me');
       setUser(response.data);
     } catch (error) {
       setUser(null);
@@ -26,10 +22,7 @@ export function useAuth() {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, 
-        { username, password },
-        { withCredentials: true }
-      );
+      const response = await api.post('/auth/login', { username, password });
       setUser(response.data.user);
       return { success: true };
     } catch (error) {
@@ -42,9 +35,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/auth/logout`, {}, {
-        withCredentials: true
-      });
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     }
