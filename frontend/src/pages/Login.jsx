@@ -6,7 +6,7 @@ import * as api from '../services/api';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user, setUser, login } = useAuth(); // added setUser
   const [isSetup, setIsSetup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -20,16 +20,16 @@ export default function Login() {
   const [showTempAdmin, setShowTempAdmin] = useState(false);
   const [tempAdminInfo, setTempAdminInfo] = useState(null);
   const [creatingTempAdmin, setCreatingTempAdmin] = useState(false);
-  const { setUser } = useAuth();¸
 
+  // --- FIRST-TIME SETUP CHECK ---
   useEffect(() => {
     const init = async () => {
       try {
         const response = await api.checkSetupNeeded();
         const setupNeeded = response.data.setupNeeded;
-
         setIsSetup(setupNeeded);
 
+        // Only reset user if it's first-time setup
         if (setupNeeded) {
           setUser(null);
         }
@@ -40,43 +40,27 @@ export default function Login() {
         setLoading(false);
       }
     };
-
     init();
-  }, []);
+  }, [setUser]);
 
-  const checkSetup = async () => {
-    try {
-      const response = await api.checkSetupNeeded();
-      const setupNeeded = response.data.setupNeeded;
-      if (setupNeeded) setIsSetup(true);
-      else setIsSetup(false);
-      setUser(null);
-    } catch (err) {
-      console.error(err);
-      setIsSetup(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // --- FORM SUBMISSION ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
 
     if (isSetup) {
+      // Registration flow
       if (!formData.username || !formData.password) {
         setError('Username and password are required');
         setSubmitting(false);
         return;
       }
-
       if (formData.password.length < 6) {
         setError('Password must be at least 6 characters');
         setSubmitting(false);
         return;
       }
-
       if (formData.password !== formData.confirmPassword) {
         setError('Passwords do not match');
         setSubmitting(false);
@@ -85,7 +69,7 @@ export default function Login() {
 
       try {
         await api.register(formData.username, formData.password, formData.email);
-        
+
         // Auto-login after registration
         const result = await login(formData.username, formData.password);
         if (result.success) {
@@ -94,8 +78,8 @@ export default function Login() {
           setError('Account created but login failed. Please try logging in.');
           setIsSetup(false);
         }
-      } catch (error) {
-        setError(error.response?.data?.error || 'Registration failed');
+      } catch (err) {
+        setError(err.response?.data?.error || 'Registration failed');
       }
     } else {
       // Login flow
@@ -106,18 +90,19 @@ export default function Login() {
         setError(result.error);
       }
     }
-    
+
     setSubmitting(false);
   };
 
+  // --- TEMP ADMIN CREATION (FORGOT PASSWORD) ---
   const handleForgotPassword = async () => {
     try {
       setCreatingTempAdmin(true);
       const response = await api.createTempAdmin();
       setTempAdminInfo(response.data);
       setShowTempAdmin(true);
-    } catch (error) {
-      alert('Failed to create temporary admin: ' + error.message);
+    } catch (err) {
+      alert('Failed to create temporary admin: ' + err.message);
     } finally {
       setCreatingTempAdmin(false);
     }
@@ -133,18 +118,15 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950"></div>
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-      
+
       <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
-        {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl shadow-2xl shadow-cyan-500/50 animate-pulse">
             <RocketLaunchIcon className="h-12 w-12 text-white" />
           </div>
         </div>
-        
         <h2 className="text-center text-4xl font-bold gradient-text mb-2">
           Hytale Server Manager
         </h2>
@@ -155,7 +137,6 @@ export default function Login() {
 
       <div className="relative mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="card p-8">
-          {/* Setup Badge */}
           {isSetup && (
             <div className="mb-6 bg-cyan-900/20 border border-cyan-500/30 rounded-xl p-4">
               <p className="text-sm text-cyan-400 font-semibold mb-1">🎉 First Time Setup</p>
@@ -171,12 +152,10 @@ export default function Login() {
                 {error}
               </div>
             )}
-            
+
             {/* Username */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                Username *
-              </label>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Username *</label>
               <input
                 type="text"
                 required
@@ -188,12 +167,10 @@ export default function Login() {
               />
             </div>
 
-            {/* Email (only for setup) */}
+            {/* Email */}
             {isSetup && (
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                  Email (optional)
-                </label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Email (optional)</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -207,9 +184,7 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
-                Password *
-              </label>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Password *</label>
               <input
                 type="password"
                 required
@@ -219,17 +194,13 @@ export default function Login() {
                 placeholder={isSetup ? "Create a strong password" : "Enter your password"}
                 autoComplete={isSetup ? "new-password" : "current-password"}
               />
-              {isSetup && (
-                <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-              )}
+              {isSetup && <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>}
             </div>
 
-            {/* Confirm Password (only for setup) */}
+            {/* Confirm Password */}
             {isSetup && (
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                  Confirm Password *
-                </label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Confirm Password *</label>
                 <input
                   type="password"
                   required
