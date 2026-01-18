@@ -172,12 +172,7 @@ this.downloadProcess.stdout.on('data', (data) => {
     this.emit('oauth-code', oauthCode);
   }
 
-        // Check for completion
-        if (output.includes('Download complete') || output.includes('successfully')) {
-          this.emit('download-complete');
-        }
-
-        // Emit progress updates
+        // Emit progress updates (removed premature download-complete)
         this.emit('progress', output.trim());
       });
 
@@ -300,8 +295,12 @@ async extractGameZip(zipPath) {
       const jarStats = await fs.stat(cacheJar);
       const assetsStats = await fs.stat(cacheAssets);
       console.log(`✅ Cache verified - JAR: ${(jarStats.size / 1024 / 1024).toFixed(2)} MB, Assets: ${(assetsStats.size / 1024 / 1024).toFixed(2)} MB`);
+      
+      // Emit download-complete now that files are in cache
+      this.emit('download-complete');
     } catch (e) {
       console.error(`❌ Failed to verify cache files:`, e.message);
+      throw new Error('Cache verification failed');
     }
     
     return { cacheJar, cacheAssets };
