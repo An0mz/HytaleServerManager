@@ -1,4 +1,4 @@
-FROM node:20-bullseye AS builder
+FROM node:20-bullseye as builder
 
 # Install Java 25 (Temurin/Adoptium)
 RUN apt-get update && \
@@ -53,10 +53,11 @@ COPY --from=builder /app/frontend/dist ./backend/public
 # Create necessary directories
 RUN mkdir -p /app/servers /app/backups /app/data
 
-# Set working directory for npm start
-WORKDIR /app/backend
-
 # Expose ports
 EXPOSE 3000 5520-5530/udp
 
-CMD ["npm", "start"]
+# Start script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]
