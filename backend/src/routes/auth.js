@@ -27,7 +27,8 @@ const verifyToken = (req, res, next) => {
 router.get('/setup-needed', (req, res) => {
   try {
     const allUsers = req.app.locals.db.getAllUsers();
-    res.json({ setupNeeded: allUsers.length === 0 });
+    const realUsers = allUsers.filter(u => u.role !== 'temp_admin' && !u.is_temp);
+    res.json({ setupNeeded: realUsers.length === 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -36,7 +37,8 @@ router.get('/setup-needed', (req, res) => {
 router.get('/setup-status', (req, res) => {
   try {
     const allUsers = req.app.locals.db.getAllUsers();
-    res.json({ setupNeeded: allUsers.length === 0 });
+    const realUsers = allUsers.filter(u => u.role !== 'temp_admin' && !u.is_temp);
+    res.json({ setupNeeded: realUsers.length === 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
