@@ -6,21 +6,24 @@ import CreateServer from './pages/CreateServer';
 import Login from './pages/Login';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './contexts/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/server/:id" element={<ProtectedRoute><ServerDetail /></ProtectedRoute>} />
-        <Route path="/create" element={<ProtectedRoute><CreateServer /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-      </Routes>
-    </Router>
+    <ToastProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/server/:id" element={<ProtectedRoute><ServerDetail /></ProtectedRoute>} />
+          <Route path="/create" element={<ProtectedRoute><CreateServer /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+        </Routes>
+      </Router>
+    </ToastProvider>
   );
 }
 

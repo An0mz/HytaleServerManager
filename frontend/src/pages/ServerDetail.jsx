@@ -18,10 +18,12 @@ import BackupManager from '../components/BackupManager';
 import ServerSettings from '../components/ServerSettings';
 import Header from './Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function ServerDetail() {
   const { id } = useParams();
   const { theme } = useTheme();
+  const toast = useToast();
   const [server, setServer] = useState(null);
   const [activeTab, setActiveTab] = useState('console');
   const [consoleOutput, setConsoleOutput] = useState('');
@@ -125,8 +127,9 @@ export default function ServerDetail() {
     try {
       await api.startServer(id);
       loadServer();
+      toast.success('Server started successfully');
     } catch (error) {
-      alert('Failed to start server: ' + error.message);
+      toast.error('Failed to start server: ' + error.message);
     }
   };
 
@@ -134,8 +137,9 @@ export default function ServerDetail() {
     try {
       await api.stopServer(id);
       loadServer();
+      toast.success('Server stopped successfully');
     } catch (error) {
-      alert('Failed to stop server: ' + error.message);
+      toast.error('Failed to stop server: ' + error.message);
     }
   };
 
@@ -143,8 +147,9 @@ export default function ServerDetail() {
     try {
       await api.restartServer(id);
       loadServer();
+      toast.success('Server restarting');
     } catch (error) {
-      alert('Failed to restart server: ' + error.message);
+      toast.error('Failed to restart server: ' + error.message);
     }
   };
 
@@ -236,7 +241,7 @@ export default function ServerDetail() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(authUrl);
-                          alert('Copied!');
+                          toast.success('Copied to clipboard!');
                         }}
                         className="btn-secondary"
                       >
@@ -259,7 +264,7 @@ export default function ServerDetail() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(authCode);
-                          alert('Copied!');
+                          toast.success('Copied to clipboard!');
                         }}
                         className="btn-secondary"
                       >

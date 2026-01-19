@@ -15,9 +15,11 @@ import * as api from '../services/api';
 import websocket from '../services/websocket';
 import Header from './Header';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function Dashboard() {
   const { theme } = useTheme();
+  const toast = useToast();
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [wsConnected, setWsConnected] = useState(false);
@@ -71,8 +73,9 @@ export default function Dashboard() {
     e.stopPropagation();
     try {
       await api.startServer(serverId);
+      toast.success('Server started successfully');
     } catch (error) {
-      alert('Failed to start: ' + error.message);
+      toast.error('Failed to start: ' + error.message);
     }
   };
 
@@ -81,8 +84,9 @@ export default function Dashboard() {
     e.stopPropagation();
     try {
       await api.stopServer(serverId);
+      toast.success('Server stopped successfully');
     } catch (error) {
-      alert('Failed to stop: ' + error.message);
+      toast.error('Failed to stop: ' + error.message);
     }
   };
 
@@ -91,8 +95,9 @@ export default function Dashboard() {
     e.stopPropagation();
     try {
       await api.restartServer(serverId);
+      toast.success('Server restarting');
     } catch (error) {
-      alert('Failed to restart: ' + error.message);
+      toast.error('Failed to restart: ' + error.message);
     }
   };
 
@@ -103,8 +108,9 @@ export default function Dashboard() {
       try {
         await api.deleteServer(serverId);
         setServers(prev => prev.filter(s => s.id !== serverId));
+        toast.success('Server deleted successfully');
       } catch (error) {
-        alert('Failed to delete: ' + error.message);
+        toast.error('Failed to delete: ' + error.message);
       }
     }
   };

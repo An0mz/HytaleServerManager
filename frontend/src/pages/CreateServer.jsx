@@ -5,10 +5,12 @@ import {  ArrowLeftIcon, CloudArrowDownIcon, CheckCircleIcon, ExclamationTriangl
 import * as api from '../services/api';
 import WebSocketService from '../services/websocket';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function CreateServer() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     port: 5520,
@@ -79,7 +81,7 @@ export default function CreateServer() {
               checkCacheStatus();
             }, 2000);
             
-            alert('✅ Download complete! Checking cache...');
+            toast.success('Download complete! Checking cache...');
             break;
             
           case 'hytale_cancelled':
@@ -92,7 +94,7 @@ export default function CreateServer() {
           case 'hytale_failed':
             setDownloading(false);
             setOauthModal(false);
-            alert('❌ Download failed: ' + message.data);
+            toast.error('Download failed: ' + message.data);
             break;
         }
       });
@@ -168,7 +170,7 @@ export default function CreateServer() {
       } else {
         console.error('❌ WebSocket failed to authenticate after 5 retries');
         setDownloading(false);
-        alert('WebSocket connection not ready. Please refresh the page and try again.');
+        toast.error('WebSocket connection not ready. Please refresh the page and try again.');
       }
     };
 
@@ -177,7 +179,7 @@ export default function CreateServer() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    toast.success('Copied to clipboard!');
   };
 
   const handleChange = (e) => {
@@ -190,19 +192,19 @@ export default function CreateServer() {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      alert('Server name is required');
+      toast.warning('Server name is required');
       return false;
     }
     if (formData.port < 1024 || formData.port > 65535) {
-      alert('Port must be between 1024 and 65535');
+      toast.warning('Port must be between 1024 and 65535');
       return false;
     }
     if (useDownloader && !cacheStatus.ready) {
-      alert('Please download Hytale files first or upload manually');
+      toast.warning('Please download Hytale files first or upload manually');
       return false;
     }
     if (!useDownloader && (!files.jar || !files.assets)) {
-      alert('Please upload both HytaleServer.jar and Assets.zip');
+      toast.warning('Please upload both HytaleServer.jar and Assets.zip');
       return false;
     }
     return true;
@@ -247,7 +249,7 @@ export default function CreateServer() {
           serverMsg = error.message;
         }
       }
-      alert('Create server failed: ' + serverMsg);
+      toast.error('Create server failed: ' + serverMsg);
       setCreating(false);
     }
   };

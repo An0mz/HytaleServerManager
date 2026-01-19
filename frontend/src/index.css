@@ -154,3 +154,19 @@
 code {
   @apply bg-gray-800 text-cyan-400 px-2 py-1 rounded text-sm font-mono;
 }
+
+/* Toast Animations */
+@keyframes slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

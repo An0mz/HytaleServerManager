@@ -10,11 +10,13 @@ import {
 import * as api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import Header from './Header';
 
 export default function Users() {
   const { user: currentUser } = useAuth();
   const { theme } = useTheme();
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -40,18 +42,18 @@ export default function Users() {
     e.preventDefault();
     
     if (newPassword.length < 6) {
-      alert('Password must be at least 6 characters');
+      toast.warning('Password must be at least 6 characters');
       return;
     }
 
     try {
       setResetting(true);
       await api.resetUserPassword(selectedUser.id, newPassword);
-      alert(`Password reset successfully for ${selectedUser.username}`);
+      toast.success(`Password reset successfully for ${selectedUser.username}`);
       setSelectedUser(null);
       setNewPassword('');
     } catch (error) {
-      alert('Failed to reset password: ' + error.message);
+      toast.error('Failed to reset password: ' + error.message);
     } finally {
       setResetting(false);
     }
@@ -64,10 +66,10 @@ export default function Users() {
 
     try {
       await api.deleteUser(user.id);
-      alert('User deleted successfully');
+      toast.success('User deleted successfully');
       loadUsers();
     } catch (error) {
-      alert('Failed to delete user: ' + error.message);
+      toast.error('Failed to delete user: ' + error.message);
     }
   };
 

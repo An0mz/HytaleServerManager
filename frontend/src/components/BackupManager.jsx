@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function BackupManager({ serverId }) {
   const { theme } = useTheme();
+  const toast = useToast();
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -31,8 +33,9 @@ export default function BackupManager({ serverId }) {
       await api.createBackup(serverId, backupName || undefined);
       setBackupName('');
       loadBackups();
+      toast.success('Backup created successfully');
     } catch (error) {
-      alert('Failed to create backup: ' + error.message);
+      toast.error('Failed to create backup: ' + error.message);
     } finally {
       setCreating(false);
     }
@@ -42,9 +45,9 @@ export default function BackupManager({ serverId }) {
     if (window.confirm('Are you sure you want to restore this backup? This will overwrite current server files.')) {
       try {
         await api.restoreBackup(serverId, backupId);
-        alert('Backup restored successfully');
+        toast.success('Backup restored successfully');
       } catch (error) {
-        alert('Failed to restore backup: ' + error.message);
+        toast.error('Failed to restore backup: ' + error.message);
       }
     }
   };
@@ -54,8 +57,9 @@ export default function BackupManager({ serverId }) {
       try {
         await api.deleteBackup(serverId, backupId);
         loadBackups();
+        toast.success('Backup deleted successfully');
       } catch (error) {
-        alert('Failed to delete backup: ' + error.message);
+        toast.error('Failed to delete backup: ' + error.message);
       }
     }
   };

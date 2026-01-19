@@ -10,9 +10,11 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function FileViewer({ serverId, filePath, onClose }) {
   const { theme } = useTheme();
+  const toast = useToast();
   const [content, setContent] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -57,9 +59,9 @@ export default function FileViewer({ serverId, filePath, onClose }) {
       
       setContent(editedContent);
       setIsEditing(false);
-      alert('File saved successfully!');
+      toast.success('File saved successfully!');
     } catch (err) {
-      alert('Failed to save: ' + err.message);
+      toast.error('Failed to save: ' + err.message);
     } finally {
       setIsSaving(false);
     }
@@ -79,8 +81,9 @@ export default function FileViewer({ serverId, filePath, onClose }) {
     try {
       const parsed = JSON.parse(editedContent);
       setEditedContent(JSON.stringify(parsed, null, 2));
+      toast.success('JSON is valid!');
     } catch (err) {
-      alert('Invalid JSON: ' + err.message);
+      toast.error('Invalid JSON: ' + err.message);
     }
   };
 

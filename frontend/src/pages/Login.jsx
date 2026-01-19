@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import * as api from '../services/api';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user, setUser, login } = useAuth(); // added setUser
+  const { user, setUser, login } = useAuth();
   const { theme } = useTheme();
+  const toast = useToast();
   const [isSetup, setIsSetup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -103,8 +105,9 @@ export default function Login() {
       const response = await api.createTempAdmin();
       setTempAdminInfo(response.data);
       setShowTempAdmin(true);
+      toast.info('Temporary admin account created');
     } catch (err) {
-      alert('Failed to create temporary admin: ' + err.message);
+      toast.error('Failed to create temporary admin: ' + err.message);
     } finally {
       setCreatingTempAdmin(false);
     }

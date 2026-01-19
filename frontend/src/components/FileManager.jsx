@@ -11,9 +11,11 @@ import {
 import * as api from '../services/api';
 import FileViewer from './FileViewer';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function FileManager({ serverId, serverStatus }) {
   const { theme } = useTheme();
+  const toast = useToast();
   const [files, setFiles] = useState([]);
   const [currentPath, setCurrentPath] = useState('');
   const [loading, setLoading] = useState(true);
@@ -63,8 +65,9 @@ export default function FileManager({ serverId, serverStatus }) {
       await api.uploadFile(serverId, currentPath, formData);
       await loadFiles();
       e.target.value = '';
+      toast.success('Files uploaded successfully');
     } catch (error) {
-      alert('Failed to upload: ' + error.message);
+      toast.error('Failed to upload: ' + error.message);
     } finally {
       setUploading(false);
     }
@@ -81,7 +84,7 @@ export default function FileManager({ serverId, serverStatus }) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      alert('Failed to download: ' + error.message);
+      toast.error('Failed to download: ' + error.message);
     }
   };
 
@@ -97,8 +100,9 @@ export default function FileManager({ serverId, serverStatus }) {
     try {
       await api.deleteFile(serverId, filePath);
       await loadFiles();
+      toast.success('File deleted successfully');
     } catch (error) {
-      alert('Failed to delete: ' + error.message);
+      toast.error('Failed to delete: ' + error.message);
     }
   };
 

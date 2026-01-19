@@ -6,9 +6,11 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function ConfigEditor({ serverId, onSaved }) {
   const { theme } = useTheme();
+  const toast = useToast();
   const [config, setConfig] = useState({
     serverName: '',
     motd: '',
@@ -61,7 +63,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
         await api.updateJVMArgs(serverId, jvmArgs);
       }
       
-      alert('Configuration saved successfully! Restart the server for changes to take effect.');
+      toast.success('Configuration saved! Restart server for changes to take effect.');
       
       if (onSaved) {
         onSaved({
@@ -72,7 +74,7 @@ export default function ConfigEditor({ serverId, onSaved }) {
         });
       }
     } catch (error) {
-      alert('Failed to save configuration: ' + error.message);
+      toast.error('Failed to save configuration: ' + error.message);
     } finally {
       setSaving(false);
     }

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import * as api from '../services/api';
 
 export default function ServerSettings({ serverId }) {
   const { theme } = useTheme();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
@@ -56,9 +58,10 @@ export default function ServerSettings({ serverId }) {
       setSaving(true);
       await api.updateServer(serverId, { auto_start: enabled });
       setSettings(prev => ({ ...prev, autoStart: enabled }));
+      toast.success('Auto-start setting updated');
     } catch (error) {
       console.error('Failed to update auto-start:', error);
-      alert('Failed to update auto-start setting');
+      toast.error('Failed to update auto-start setting');
     } finally {
       setSaving(false);
     }
@@ -70,9 +73,10 @@ export default function ServerSettings({ serverId }) {
       const newSchedule = { ...settings.backupSchedule, enabled };
       await api.updateServer(serverId, { backupSchedule: newSchedule });
       setSettings(prev => ({ ...prev, backupSchedule: newSchedule }));
+      toast.success('Backup schedule updated');
     } catch (error) {
       console.error('Failed to update backup schedule:', error);
-      alert('Failed to update backup schedule');
+      toast.error('Failed to update backup schedule');
     } finally {
       setSaving(false);
     }
@@ -84,9 +88,10 @@ export default function ServerSettings({ serverId }) {
       const newSchedule = { ...settings.backupSchedule, cron };
       await api.updateServer(serverId, { backupSchedule: newSchedule });
       setSettings(prev => ({ ...prev, backupSchedule: newSchedule }));
+      toast.success('Schedule updated');
     } catch (error) {
       console.error('Failed to update cron schedule:', error);
-      alert('Failed to update cron schedule');
+      toast.error('Failed to update cron schedule');
     } finally {
       setSaving(false);
     }
@@ -98,9 +103,10 @@ export default function ServerSettings({ serverId }) {
       const newSchedule = { ...settings.backupSchedule, retention: parseInt(retention) };
       await api.updateServer(serverId, { backupSchedule: newSchedule });
       setSettings(prev => ({ ...prev, backupSchedule: newSchedule }));
+      toast.success('Retention policy updated');
     } catch (error) {
       console.error('Failed to update retention:', error);
-      alert('Failed to update retention policy');
+      toast.error('Failed to update retention policy');
     } finally {
       setSaving(false);
     }
