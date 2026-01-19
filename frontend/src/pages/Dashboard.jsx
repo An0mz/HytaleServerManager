@@ -24,7 +24,6 @@ export default function Dashboard() {
   const toast = useToast();
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [wsConnected, setWsConnected] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, serverId: null, serverName: '' });
 
@@ -36,19 +35,12 @@ export default function Dashboard() {
     const handleServersChanged = () => loadServers();
     window.addEventListener('servers-changed', handleServersChanged);
 
-    const unsubConnect = websocket.on('connected', () => setWsConnected(true));
-    const unsubDisconnect = websocket.on('disconnected', () => setWsConnected(false));
+    const unsubConnect = websocket.on('connected', () => {});
+    const unsubDisconnect = websocket.on('disconnected', () => {});
     const unsubUpdate = websocket.on('update', () => loadServers());
-
-    const current = websocket.getConnection();
-    if (current && current.readyState === WebSocket.OPEN) {
-      setWsConnected(true);
-    }
 
     const pollInterval = setInterval(() => {
       loadServers();
-      const c = websocket.getConnection();
-      setWsConnected(!!(c && c.readyState === WebSocket.OPEN));
     }, 3000);
 
     return () => {
@@ -142,7 +134,8 @@ export default function Dashboard() {
     players: servers.reduce((acc, s) => acc + (s.players?.length || 0), 0),
     maxPlayers: servers.reduce((acc, s) => acc + (s.max_players || 0), 0),
     cpuTotal: Math.round(servers.reduce((acc, s) => acc + (s.stats?.cpu || 0), 0) * 100) / 100,
-    memoryTotal: Math.round(servers.reduce((acc, s) => acc + (s.stats?.memory || 0), 0))
+    memoryTotal: Math.round(servers.reduce((acc, s) => acc + (s.stats?.memory || 0), 0)),
+    totalDiskSize: servers.reduce((acc, s) => acc + (s.dirSize || 0), 0)
   };
 
   if (loading) {
@@ -241,66 +234,142 @@ export default function Dashboard() {
     <Header />
         <div className={`min-h-screen ${theme.bg} p-6`}>
           {/* Stats Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className={`${theme.card} p-4`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`${theme.textSecondary} text-sm`}>Servers</p>
-                  <p className={`text-3xl font-bold ${theme.text}`}>{stats.total}</p>
-                  <p className="text-emerald-400 text-xs mt-1">
-                    {stats.running} online • {stats.offline} offline
-                  </p>
-                </div>
-                <CircleStackIcon className="h-10 w-10 text-cyan-400" />
-              </div>
-            </div>
-
-            <div className={`${theme.card} p-4`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`${theme.textSecondary} text-sm`}>Players</p>
-                  <p className={`text-3xl font-bold ${theme.text}`}>{stats.players}</p>
-                  <p className="text-blue-400 text-xs mt-1">{stats.maxPlayers} Max</p>
-                </div>
-                <UsersIcon className="h-10 w-10 text-blue-400" />
-              </div>
-            </div>
-
-            <div className={`${theme.card} p-4`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <div>
-                    <p className={`${theme.textSecondary} text-sm`}>CPU Usage</p>
-                    <p className={`text-3xl font-bold ${theme.text}`}>{stats.cpuTotal}%</p>
-                    <p className={`${theme.textSecondary} text-xs mt-1`}>Across all servers</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Total Servers Card */}
+            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2 rounded-lg bg-cyan-500/20`}>
+                    <CircleStackIcon className="h-5 w-5 text-cyan-400" />
                   </div>
-                  <div>
-                    <p className={`${theme.textSecondary} text-sm`}>Memory</p>
-                    <p className={`text-3xl font-bold ${theme.text}`}>{stats.memoryTotal} MB</p>
-                    <p className={`${theme.textSecondary} text-xs mt-1`}>Total across servers</p>
+                  <div className={`text-xs px-2 py-0.5 rounded-full ${stats.running > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-600/20 text-gray-400'}`}>
+                    {stats.running > 0 ? 'Active' : 'Idle'}
                   </div>
                 </div>
-                <CpuChipIcon className="h-10 w-10 text-purple-400" />
+                <div>
+                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Total Servers</p>
+                  <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.total}</p>
+                  <div className="flex items-center space-x-3 text-xs">
+                    <span className="flex items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1" />
+                      <span className="text-emerald-400 font-semibold">{stats.running}</span>
+                      <span className={`${theme.textSecondary} ml-1`}>online</span>
+                    </span>
+                    <span className="flex items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1" />
+                      <span className="text-gray-400 font-semibold">{stats.offline}</span>
+                      <span className={`${theme.textSecondary} ml-1`}>offline</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className={`${theme.card} p-4`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`${theme.textSecondary} text-sm`}>Connection</p>
-                  <p className={`text-xl font-bold mt-1 ${wsConnected ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {wsConnected ? 'Live' : 'Offline'}
-                  </p>
+            {/* Players Card */}
+            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2 rounded-lg bg-blue-500/20`}>
+                    <UsersIcon className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div className={`text-xs px-2 py-0.5 rounded-full ${stats.players > 0 ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-600/20 text-gray-400'}`}>
+                    {stats.players > 0 ? 'Playing' : 'Empty'}
+                  </div>
                 </div>
-                <SignalIcon className={`h-10 w-10 ${wsConnected ? 'text-emerald-400' : 'text-red-400'}`} />
+                <div>
+                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Active Players</p>
+                  <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.players}</p>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
+                        style={{ width: `${stats.maxPlayers > 0 ? (stats.players / stats.maxPlayers * 100) : 0}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs ${theme.textSecondary}`}>{stats.maxPlayers} max</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CPU Usage Card */}
+            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2 rounded-lg bg-purple-500/20`}>
+                    <CpuChipIcon className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <div className={`text-xs px-2 py-0.5 rounded-full ${
+                    stats.cpuTotal > 75 ? 'bg-red-500/20 text-red-400' : 
+                    stats.cpuTotal > 50 ? 'bg-yellow-500/20 text-yellow-400' : 
+                    'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    {stats.cpuTotal > 75 ? 'High' : stats.cpuTotal > 50 ? 'Medium' : 'Low'}
+                  </div>
+                </div>
+                <div>
+                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>CPU Usage</p>
+                  <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.cpuTotal}%</p>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          stats.cpuTotal > 75 ? 'bg-gradient-to-r from-red-600 to-red-400' : 
+                          stats.cpuTotal > 50 ? 'bg-gradient-to-r from-yellow-600 to-yellow-400' : 
+                          'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                        }`}
+                        style={{ width: `${Math.min(stats.cpuTotal, 100)}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs ${theme.textSecondary}`}>all servers</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Memory Usage Card */}
+            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2 rounded-lg bg-pink-500/20`}>
+                    <CircleStackIcon className="h-5 w-5 text-pink-400" />
+                  </div>
+                  <div className={`text-xs px-2 py-0.5 rounded-full ${
+                    stats.memoryTotal > 4000 ? 'bg-red-500/20 text-red-400' : 
+                    stats.memoryTotal > 2000 ? 'bg-yellow-500/20 text-yellow-400' : 
+                    'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    {stats.memoryTotal > 4000 ? 'High' : stats.memoryTotal > 2000 ? 'Medium' : 'Low'}
+                  </div>
+                </div>
+                <div>
+                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Memory Usage</p>
+                  <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.memoryTotal} MB</p>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500"
+                        style={{ width: `${Math.min((stats.memoryTotal / 50), 100)}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs ${theme.textSecondary}`}>all servers</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Server List */}
-          <div className={theme.card}>
-            <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between`}>
-              <h2 className={`text-xl font-bold ${theme.text}`}>All Servers</h2>
+          <div className={`${theme.card} overflow-hidden`}>
+            <div className={`px-6 py-5 ${theme.bgSecondary} border-b ${theme.border} flex items-center justify-between`}>
+              <div>
+                <h2 className={`text-2xl font-bold ${theme.text} mb-1`}>Server Overview</h2>
+                <p className={`text-sm ${theme.textSecondary}`}>Manage and monitor all your Hytale servers</p>
+              </div>
               <div className="flex items-center space-x-4">
                 <input
                   type="text"
@@ -311,9 +380,10 @@ export default function Dashboard() {
                 />
                 <Link
                   to="/create"
-                  className="btn-primary flex items-center space-x-2"
+                  className="btn-primary flex items-center space-x-2 px-6 py-2.5"
                 >
-                  <span>+ Create New Server</span>
+                  <span>+</span>
+                  <span>New Server</span>
                 </Link>
               </div>
             </div>
@@ -345,88 +415,168 @@ export default function Dashboard() {
                     </tr>
                   ) : (
                     filteredServers.map((server) => (
-                      <tr key={server.id} className={`hover:${theme.bgTertiary} transition-colors`}>
-                        <td className="px-6 py-4">
-                          <Link to={`/server/${server.id}`} className="block">
-                            <p className={`${theme.accentText} font-medium hover:text-cyan-300`}>{server.name}</p>
-                            <p className={`text-sm ${theme.textSecondary}`}>Port {server.port}</p>
+                      <tr key={server.id} className={`hover:${theme.bgSecondary} transition-all border-b ${theme.border} last:border-0 group`}>
+                        {/* Server Info */}
+                        <td className="px-6 py-5">
+                          <Link to={`/server/${server.id}`} className="flex items-center space-x-4">
+                            {/* Status Indicator Circle */}
+                            <div className="relative">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                server.status === 'running' ? 'bg-emerald-500/20' :
+                                server.status === 'starting' ? 'bg-yellow-500/20' :
+                                server.status === 'stopping' ? 'bg-orange-500/20' :
+                                'bg-gray-600/20'
+                              }`}>
+                                <CircleStackIcon className={`h-6 w-6 ${
+                                  server.status === 'running' ? 'text-emerald-400' :
+                                  server.status === 'starting' ? 'text-yellow-400' :
+                                  server.status === 'stopping' ? 'text-orange-400' :
+                                  'text-gray-400'
+                                }`} />
+                              </div>
+                              {server.status === 'running' && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full border-2 border-gray-900 animate-pulse" />
+                              )}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <p className={`${theme.accentText} font-semibold text-lg group-hover:text-cyan-300 transition-colors`}>
+                                {server.name}
+                              </p>
+                              <p className={`text-sm ${theme.textSecondary} mt-0.5`}>
+                                Port {server.port}
+                              </p>
+                            </div>
                           </Link>
                         </td>
-                        <td className="px-6 py-4">
+
+                        {/* Actions */}
+                        <td className="px-6 py-5">
                           <div className="flex items-center space-x-2">
                             {server.status === 'stopped' ? (
                               <button
                                 onClick={(e) => handleStart(server.id, e)}
-                                className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 transition-all"
-                                title="Start"
+                                className="px-4 py-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 transition-all font-medium flex items-center space-x-2"
+                                title="Start Server"
                               >
                                 <PlayIcon className="h-4 w-4" />
+                                <span>Start</span>
                               </button>
                             ) : (
                               <>
                                 <button
                                   onClick={(e) => handleStop(server.id, e)}
                                   className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all"
-                                  title="Stop"
+                                  title="Stop Server"
                                 >
-                                  <StopIcon className="h-4 w-4" />
+                                  <StopIcon className="h-5 w-5" />
                                 </button>
                                 <button
                                   onClick={(e) => handleRestart(server.id, e)}
                                   className="p-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-all"
-                                  title="Restart"
+                                  title="Restart Server"
                                 >
-                                  <ArrowPathIcon className="h-4 w-4" />
+                                  <ArrowPathIcon className="h-5 w-5" />
                                 </button>
                               </>
                             )}
                             <button
                               onClick={(e) => handleDelete(server.id, e)}
                               className={`p-2 rounded-lg ${theme.bgTertiary} ${theme.textSecondary} hover:bg-red-600/20 hover:text-red-400 transition-all`}
-                              title="Delete"
+                              title="Delete Server"
                             >
-                              <TrashIcon className="h-4 w-4" />
+                              <TrashIcon className="h-5 w-5" />
                             </button>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <p className={theme.text}>{typeof server.stats?.cpu !== 'undefined' ? `${server.stats.cpu}%` : '0%'}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className={theme.text}>{typeof server.stats?.memory !== 'undefined' ? `${server.stats.memory} MB` : '-'}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className={theme.text}>{server.dirSizeFormatted || '-'}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className={theme.text}>{server.players?.length || 0} / {server.max_players} Max</p>
-                        </td>
-                        <td className="px-6 py-4">
+
+                        {/* CPU Usage */}
+                        <td className="px-6 py-5">
                           <div className="flex items-center space-x-3">
-                            {server.status === 'running' && (
-                              <>
-                                <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                                <span className={`text-sm font-semibold ${theme.text}`}>Online</span>
-                              </>
-                            )}
-                            {server.status === 'starting' && (
-                              <>
-                                <span className="h-3 w-3 rounded-full bg-yellow-400" />
-                                <span className={`text-sm font-semibold ${theme.text}`}>Starting</span>
-                              </>
-                            )}
-                            {server.status === 'stopping' && (
-                              <>
-                                <span className="h-3 w-3 rounded-full bg-orange-400" />
-                                <span className={`text-sm font-semibold ${theme.text}`}>Shutting down</span>
-                              </>
-                            )}
-                            {!(server.status === 'running' || server.status === 'starting' || server.status === 'stopping') && (
-                              <>
-                                <span className="h-3 w-3 rounded-full bg-red-400" />
-                                <span className={`text-sm font-semibold ${theme.text}`}>Offline</span>
-                              </>
-                            )}
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-sm font-semibold ${theme.text}`}>
+                                  {typeof server.stats?.cpu !== 'undefined' ? `${server.stats.cpu}%` : '0%'}
+                                </span>
+                              </div>
+                              <div className="w-24 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                                <div 
+                                  className={`h-full transition-all duration-500 ${
+                                    (server.stats?.cpu || 0) > 75 ? 'bg-red-500' :
+                                    (server.stats?.cpu || 0) > 50 ? 'bg-yellow-500' :
+                                    'bg-emerald-500'
+                                  }`}
+                                  style={{ width: `${Math.min(server.stats?.cpu || 0, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Memory Usage */}
+                        <td className="px-6 py-5">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-sm font-semibold ${theme.text}`}>
+                                  {typeof server.stats?.memory !== 'undefined' ? `${server.stats.memory} MB` : '0 MB'}
+                                </span>
+                              </div>
+                              <div className="w-24 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                                  style={{ width: `${Math.min((server.stats?.memory || 0) / 40, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Disk Size */}
+                        <td className="px-6 py-5">
+                          <span className={`text-sm font-medium ${theme.text}`}>
+                            {server.dirSizeFormatted || '-'}
+                          </span>
+                        </td>
+
+                        {/* Players */}
+                        <td className="px-6 py-5">
+                          <div className="flex items-center space-x-2">
+                            <UsersIcon className="h-5 w-5 text-blue-400" />
+                            <span className={`text-sm font-semibold ${theme.text}`}>
+                              {server.players?.length || 0}
+                            </span>
+                            <span className={`text-xs ${theme.textSecondary}`}>
+                              / {server.max_players}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-6 py-5">
+                          <div className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full ${
+                            server.status === 'running' ? 'bg-emerald-500/20' :
+                            server.status === 'starting' ? 'bg-yellow-500/20' :
+                            server.status === 'stopping' ? 'bg-orange-500/20' :
+                            'bg-gray-600/20'
+                          }`}>
+                            <span className={`w-2 h-2 rounded-full ${
+                              server.status === 'running' ? 'bg-emerald-400 animate-pulse' :
+                              server.status === 'starting' ? 'bg-yellow-400 animate-pulse' :
+                              server.status === 'stopping' ? 'bg-orange-400 animate-pulse' :
+                              'bg-gray-400'
+                            }`} />
+                            <span className={`text-sm font-semibold ${
+                              server.status === 'running' ? 'text-emerald-400' :
+                              server.status === 'starting' ? 'text-yellow-400' :
+                              server.status === 'stopping' ? 'text-orange-400' :
+                              theme.textSecondary
+                            }`}>
+                              {server.status === 'running' ? 'Online' :
+                               server.status === 'starting' ? 'Starting' :
+                               server.status === 'stopping' ? 'Stopping' :
+                               'Offline'}
+                            </span>
                           </div>
                         </td>
                       </tr>

@@ -9,10 +9,12 @@ import {
   ChevronDownIcon,
   MoonIcon,
   SunIcon,
-  SwatchIcon
+  SwatchIcon,
+  SignalIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
+import websocket from '../services/websocket';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -20,6 +22,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const dropdownRef = useRef(null);
   const themeDropdownRef = useRef(null);
 
@@ -36,6 +39,22 @@ export default function Header() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // WebSocket connection status
+  useEffect(() => {
+    const unsubConnect = websocket.on('connected', () => setWsConnected(true));
+    const unsubDisconnect = websocket.on('disconnected', () => setWsConnected(false));
+
+    const current = websocket.getConnection();
+    if (current && current.readyState === WebSocket.OPEN) {
+      setWsConnected(true);
+    }
+
+    return () => {
+      unsubConnect();
+      unsubDisconnect();
+    };
   }, []);
 
   const handleLogout = () => {
@@ -64,8 +83,19 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Right - Theme Switcher and User Dropdown */}
+          {/* Right - Connection Status, Theme Switcher and User Dropdown */}
           <div className="flex items-center space-x-3">
+            {/* WebSocket Connection Status */}
+            <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${theme.bgTertiary} border ${theme.border}`}>
+              <SignalIcon className={`h-5 w-5 ${wsConnected ? 'text-emerald-400' : 'text-red-400'}`} />
+              <div className="flex items-center space-x-2">
+                <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                <span className={`text-xs font-semibold ${wsConnected ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {wsConnected ? 'Live' : 'Offline'}
+                </span>
+              </div>
+            </div>
+
             {/* Theme Switcher */}
             <div className="relative" ref={themeDropdownRef}>
               <button

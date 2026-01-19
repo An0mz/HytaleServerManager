@@ -5,8 +5,7 @@ import {
   PlayIcon, 
   StopIcon, 
   ArrowPathIcon,
-  XMarkIcon,
-  ClipboardDocumentIcon
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import websocket from '../services/websocket';
@@ -16,6 +15,7 @@ import FileManager from '../components/FileManager';
 import StatsPanel from '../components/StatsPanel';
 import BackupManager from '../components/BackupManager';
 import ServerSettings from '../components/ServerSettings';
+import ActivityFeed from '../components/ActivityFeed';
 import Header from './Header';
 import { StatsRowSkeleton } from '../components/Skeletons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -160,6 +160,7 @@ export default function ServerDetail() {
     { id: 'files', name: 'File Manager' },
     { id: 'backups', name: 'Backups' },
     { id: 'stats', name: 'Statistics' },
+    { id: 'activity', name: 'Activity' },
     { id: 'settings', name: 'Settings' },
   ];
 
@@ -395,14 +396,14 @@ export default function ServerDetail() {
 
             {/* Tabs */}
             <div className={`mt-6 border-b ${theme.border}`}>
-              <nav className="-mb-px flex space-x-8">
+              <nav className="-mb-px flex space-x-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    className={`py-2 px-4 rounded-t-lg font-medium text-sm transition-all border-t-2 ${
                       activeTab === tab.id
-                        ? `${theme.accent} ${theme.accentText}`
+                        ? `${theme.bgSecondary} text-blue-600 border-blue-600`
                         : `border-transparent ${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
@@ -430,6 +431,7 @@ export default function ServerDetail() {
           {activeTab === 'files' && <FileManager serverId={id} serverStatus={server.status} />}
           {activeTab === 'backups' && <BackupManager serverId={id} />}
           {activeTab === 'stats' && <StatsPanel serverId={id} serverStatus={server.status} />}
+          {activeTab === 'activity' && <ActivityFeed serverId={id} />}
           {activeTab === 'settings' && <ServerSettings serverId={id} />}
         </div>
       </div>
