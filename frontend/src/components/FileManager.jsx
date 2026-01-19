@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   FolderIcon, 
   DocumentIcon,
@@ -16,11 +17,14 @@ import { useToast } from '../contexts/ToastContext';
 export default function FileManager({ serverId, serverStatus }) {
   const { theme } = useTheme();
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [files, setFiles] = useState([]);
-  const [currentPath, setCurrentPath] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // Get current path from URL
+  const currentPath = searchParams.get('path') || '';
 
   useEffect(() => {
     loadFiles();
@@ -48,7 +52,12 @@ export default function FileManager({ serverId, serverStatus }) {
   };
 
   const handleNavigate = (path) => {
-    setCurrentPath(path);
+    // Update URL search params to track folder navigation
+    if (path) {
+      setSearchParams({ path });
+    } else {
+      setSearchParams({});
+    }
   };
 
   const handleUpload = async (e) => {
@@ -145,7 +154,7 @@ export default function FileManager({ serverId, serverStatus }) {
               {/* Breadcrumbs */}
               <div className="flex items-center space-x-2 text-sm">
                 <button
-                  onClick={() => setCurrentPath('')}
+                  onClick={() => handleNavigate('')}
                   className={`${theme.accentText} hover:text-cyan-300 transition-colors font-medium`}
                 >
                   Root
@@ -154,7 +163,7 @@ export default function FileManager({ serverId, serverStatus }) {
                   <React.Fragment key={index}>
                     <span className={theme.textSecondary}>/</span>
                     <button
-                      onClick={() => setCurrentPath(breadcrumbs.slice(0, index + 1).join('/'))}
+                      onClick={() => handleNavigate(breadcrumbs.slice(0, index + 1).join('/'))}
                       className={`${theme.accentText} hover:text-cyan-300 transition-colors font-medium`}
                     >
                       {crumb}
