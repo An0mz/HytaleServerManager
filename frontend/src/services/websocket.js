@@ -12,7 +12,6 @@ class WebSocketService {
   // Call this from the Login component after successful login
   setAuthToken(token) {
     this.authToken = token;
-    console.log('✅ Auth token set in WebSocketService');
     // If already connected, authenticate now
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.authenticate();
@@ -26,33 +25,26 @@ class WebSocketService {
   getTokenFromCookie() {
     // Try to get from memory first
     if (this.authToken) {
-      console.log('Token found in memory');
       return this.authToken;
     }
     
     // Try localStorage as fallback
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
-      console.log('Token found in localStorage');
       this.authToken = storedToken;
       return storedToken;
     }
     
-    console.log('No token found');
     return null;
   }
 
   authenticate() {
     const token = this.getTokenFromCookie();
     if (token && this.ws && this.ws.readyState === WebSocket.OPEN) {
-      console.log('🔑 Sending authentication token to WebSocket');
       this.send({
         type: 'authenticate',
         token: token
       });
-    } else {
-      if (!token) console.warn('No token available for authentication');
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) console.warn('WebSocket not ready for authentication');
     }
   }
 
@@ -104,7 +96,6 @@ class WebSocketService {
 
         if (data.type === 'authenticated') {
           this.isAuthenticated = true;
-          console.info('WebSocket authenticated as:', data.user?.username);
         } else if (data.type === 'error' && data.message?.includes('Authentication')) {
           this.isAuthenticated = false;
           console.error('WebSocket authentication failed:', data.message);

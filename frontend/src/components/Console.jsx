@@ -18,14 +18,10 @@ export default function Console({ serverId, serverStatus }) {
     const subscribeAttempts = [0];
     const attemptSubscribe = () => {
       if (websocket.isConnectedAndAuthenticated && websocket.isConnectedAndAuthenticated()) {
-        console.log(`📡 Subscribing to console for server ${serverId}`);
         websocket.subscribeToConsole(parseInt(serverId));
       } else if (subscribeAttempts[0] < 10) {
         subscribeAttempts[0]++;
-        console.log(`⏳ WebSocket not ready yet (attempt ${subscribeAttempts[0]}/10), retrying...`);
         setTimeout(attemptSubscribe, 300);
-      } else {
-        console.error('❌ Failed to subscribe to console after 10 attempts');
       }
     };
     
