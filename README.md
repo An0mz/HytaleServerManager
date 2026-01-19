@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/An0mz/HytaleServerManager/main/frontend/public/hytale-icon.png" alt="Hytale Server Manager" width="128" height="128">
+<img src="https://raw.githubusercontent.com/An0mz/HytaleServerManager/main/frontend/public/images/icon.png" alt="Hytale Server Manager" width="128" height="128">
 
 # Hytale Server Manager
 
