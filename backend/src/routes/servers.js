@@ -393,6 +393,61 @@ router.delete('/:id/files', async (req, res) => {
   }
 });
 
+router.post('/:id/files/move', async (req, res) => {
+  try {
+    const server = req.app.locals.db.getServer(req.params.id);
+    if (!server) {
+      return res.status(404).json({ error: 'Server not found' });
+    }
+
+    const { sourcePath, destinationPath } = req.body;
+    if (!sourcePath || !destinationPath) {
+      return res.status(400).json({ error: 'Source and destination paths are required' });
+    }
+
+    const normalizedSource = sourcePath.replace(/\\/g, path.sep);
+    const normalizedDest = destinationPath.replace(/\\/g, path.sep);
+    
+    const fullSourcePath = path.join(server.server_path, normalizedSource);
+    const fullDestPath = path.join(server.server_path, normalizedDest);
+    
+    // Security check
+    if (!fullSourcePath.startsWith(server.server_path) || !fullDestPath.startsWith(server.server_path)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if source exists
+    try {
+      await fs.access(fullSourcePath);
+    } catch {
+      return res.status(404).json({ error: 'Source file not found' });
+    }
+
+    // Check if destination directory exists
+    const destDir = path.dirname(fullDestPath);
+    try {
+      await fs.access(destDir);
+    } catch {
+      return res.status(404).json({ error: 'Destination directory not found' });
+    }
+
+    // Move the file/folder
+    await fs.rename(fullSourcePath, fullDestPath);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Move file error:', error);
+    
+    if (error.code === 'EBUSY' || error.code === 'EPERM') {
+      return res.status(409).json({ 
+        error: "Can't move this file while the server is running. Please stop the server first." 
+      });
+    }
+    
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/:id/files/download', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);

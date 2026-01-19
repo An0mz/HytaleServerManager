@@ -51,6 +51,9 @@ export const uploadFiles = (id, files) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
+export const moveFile = (id, sourcePath, destinationPath) => {
+  return api.post(`/servers/${id}/files/move`, { sourcePath, destinationPath });
+};
 export const downloadHytaleFiles = (id) => api.post(`/servers/${id}/download-hytale`);
 export const setupHytaleDownloader = () => api.post('/servers/hytale/setup');
 export const checkHytaleCache = () => api.get('/servers/hytale/check-cache');
