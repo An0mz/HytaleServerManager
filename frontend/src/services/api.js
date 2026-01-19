@@ -40,7 +40,7 @@ export const deleteFile = (id, path) => api.delete(`/servers/${id}/files?path=${
 export const downloadFile = (id, path) => api.get(`/servers/${id}/files/download?path=${path}`, { responseType: 'blob' });
 export const listFiles = (id, path = '') => api.get(`/servers/${id}/files?path=${path}`);
 export const uploadFile = (id, path, formData) => {
-  return api.post(`/servers/${id}/upload`, formData, {
+  return api.post(`/servers/${id}/upload?path=${encodeURIComponent(path)}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };

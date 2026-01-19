@@ -12,7 +12,7 @@ import * as api from '../services/api';
 import FileViewer from './FileViewer';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function FileManager({ serverId }) {
+export default function FileManager({ serverId, serverStatus }) {
   const { theme } = useTheme();
   const [files, setFiles] = useState([]);
   const [currentPath, setCurrentPath] = useState('');
@@ -86,7 +86,13 @@ export default function FileManager({ serverId }) {
   };
 
   const handleDelete = async (filePath) => {
-    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    let confirmMessage = 'Are you sure you want to delete this file?';
+    
+    if (serverStatus === 'running') {
+      confirmMessage = '⚠️ WARNING: The server is currently running!\n\nDeleting files while the server is running may cause issues or require a restart.\n\nAre you sure you want to continue?';
+    }
+    
+    if (!window.confirm(confirmMessage)) return;
 
     try {
       await api.deleteFile(serverId, filePath);
@@ -230,8 +236,13 @@ export default function FileManager({ serverId }) {
                       </button>
                       <button
                         onClick={() => handleDelete(file.path)}
-                        className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-all"
-                        title="Delete"
+                        disabled={serverStatus === 'running'}
+                        className={`p-2 rounded-lg transition-all ${
+                          serverStatus === 'running'
+                            ? 'bg-gray-600/20 text-gray-500 cursor-not-allowed opacity-50'
+                            : 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
+                        }`}
+                        title={serverStatus === 'running' ? 'Cannot delete while server is running' : 'Delete'}
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>

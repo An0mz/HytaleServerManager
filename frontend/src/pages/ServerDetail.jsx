@@ -386,7 +386,7 @@ export default function ServerDetail() {
               }}
             />
           )}
-          {activeTab === 'files' && <FileManager serverId={id} />}
+          {activeTab === 'files' && <FileManager serverId={id} serverStatus={server.status} />}
           {activeTab === 'backups' && <BackupManager serverId={id} />}
           {activeTab === 'stats' && <StatsPanel serverId={id} serverStatus={server.status} />}
           {activeTab === 'settings' && <ServerSettings serverId={id} />}
