@@ -59,9 +59,8 @@ export default function ConfigEditor({ serverId, onSaved }) {
       
       await api.updateServerConfig(serverId, config);
       
-      if (jvmArgs.trim()) {
-        await api.updateJVMArgs(serverId, jvmArgs);
-      }
+      // Always update JVM args, even if empty (to allow clearing them)
+      await api.updateJVMArgs(serverId, jvmArgs);
       
       toast.success('Configuration saved! Restart server for changes to take effect.');
       

@@ -133,14 +133,18 @@ router.put('/:id/jvm', verifyToken, (req, res) => {
     console.log(`[JVM PUT] Server ID: ${serverId}`);
     console.log(`[JVM PUT] Body:`, req.body);
     
-    if (!jvmArgs) {
-      return res.status(400).json({ error: 'JVM arguments required' });
+    // Allow jvmArgs to be undefined or empty string (for clearing)
+    if (jvmArgs === undefined) {
+      return res.status(400).json({ error: 'JVM arguments field required' });
     }
 
-    let args = jvmArgs;
-    if (typeof jvmArgs === 'string') {
+    let args = [];
+    if (jvmArgs && typeof jvmArgs === 'string') {
       args = jvmArgs.split(' ').filter(arg => arg.trim());
+    } else if (Array.isArray(jvmArgs)) {
+      args = jvmArgs;
     }
+    // If jvmArgs is empty string, args will be empty array (clears JVM args)
 
     console.log(`[JVM PUT] Saving:`, args);
     req.app.locals.db.saveServerConfig(serverId, 'jvmArgs', args);
