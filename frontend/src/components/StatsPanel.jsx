@@ -74,8 +74,8 @@ export default function StatsPanel({ serverId, serverStatus }) {
       return 'text-emerald-400';
     }
     if (type === 'memory') {
-      if (value > 3000) return 'text-red-400';
-      if (value > 2000) return 'text-yellow-400';
+      if (value > 32768) return 'text-red-400';
+      if (value > 16384) return 'text-yellow-400';
       return 'text-emerald-400';
     }
   };
@@ -87,8 +87,8 @@ export default function StatsPanel({ serverId, serverStatus }) {
       return 'bg-emerald-500/20';
     }
     if (type === 'memory') {
-      if (value > 3000) return 'bg-red-500/20';
-      if (value > 2000) return 'bg-yellow-500/20';
+      if (value > 32768) return 'bg-red-500/20';
+      if (value > 16384) return 'bg-yellow-500/20';
       return 'bg-emerald-500/20';
     }
   };
@@ -107,7 +107,7 @@ export default function StatsPanel({ serverId, serverStatus }) {
               </div>
               <div className={`text-xs px-2 py-1 rounded-full ${getHealthBg(stats?.memory, 'memory')}`}>
                 <span className={getHealthColor(stats?.memory, 'memory')}>
-                  {stats?.memory > 3000 ? 'High' : stats?.memory > 2000 ? 'Medium' : 'Normal'}
+                  {stats?.memory > 32768 ? 'High' : stats?.memory > 16384 ? 'Medium' : 'Normal'}
                 </span>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function StatsPanel({ serverId, serverStatus }) {
                 <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-                    style={{ width: `${Math.min((stats?.memory || 0) / 40, 100)}%` }}
+                    style={{ width: `${Math.min((stats?.memory || 0) / 327.68, 100)}%` }}
                   />
                 </div>
               </div>

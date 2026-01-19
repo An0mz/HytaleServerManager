@@ -339,11 +339,11 @@ export default function Dashboard() {
                     <CircleStackIcon className="h-5 w-5 text-pink-400" />
                   </div>
                   <div className={`text-xs px-2 py-0.5 rounded-full ${
-                    stats.memoryTotal > 4000 ? 'bg-red-500/20 text-red-400' : 
-                    stats.memoryTotal > 2000 ? 'bg-yellow-500/20 text-yellow-400' : 
+                    stats.memoryTotal > 32768 ? 'bg-red-500/20 text-red-400' : 
+                    stats.memoryTotal > 16384 ? 'bg-yellow-500/20 text-yellow-400' : 
                     'bg-emerald-500/20 text-emerald-400'
                   }`}>
-                    {stats.memoryTotal > 4000 ? 'High' : stats.memoryTotal > 2000 ? 'Medium' : 'Low'}
+                    {stats.memoryTotal > 32768 ? 'High' : stats.memoryTotal > 16384 ? 'Medium' : 'Low'}
                   </div>
                 </div>
                 <div>
@@ -353,7 +353,7 @@ export default function Dashboard() {
                     <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500"
-                        style={{ width: `${Math.min((stats.memoryTotal / 50), 100)}%` }}
+                        style={{ width: `${Math.min((stats.memoryTotal / 327.68), 100)}%` }}
                       />
                     </div>
                     <span className={`text-xs ${theme.textSecondary}`}>all servers</span>
@@ -525,7 +525,7 @@ export default function Dashboard() {
                               <div className="w-24 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
                                 <div 
                                   className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                                  style={{ width: `${Math.min((server.stats?.memory || 0) / 40, 100)}%` }}
+                                  style={{ width: `${Math.min((server.stats?.memory || 0) / 327.68, 100)}%` }}
                                 />
                               </div>
                             </div>
