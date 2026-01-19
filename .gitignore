@@ -48,6 +48,9 @@ Thumbs.db
 
 # Data directories
 servers/
+logs/
+backend/cache/
+backups/
 /servers/
 backend/servers/
 backups/
