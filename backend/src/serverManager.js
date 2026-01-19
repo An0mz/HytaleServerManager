@@ -325,8 +325,14 @@ constructor(db) {
           const pid = serverProcess.pid;
           if (!pid) return;
           const stat = await pidusage(pid);
+          
+          // Normalize CPU to 0-100% scale
+          // pidusage returns percentage that can exceed 100% on multi-core systems
+          const cpuCores = require('os').cpus().length;
+          const normalizedCpu = Math.min(100, Math.round((stat.cpu / cpuCores) * 100) / 100);
+          
           const statsObj = {
-            cpu: Math.round(stat.cpu * 100) / 100,
+            cpu: normalizedCpu,
             memory: Math.round((stat.memory || 0) / 1024 / 1024),
             uptime: Math.floor((Date.now() - serverInstance.startTime) / 1000),
             playerCount: serverInstance.players.length

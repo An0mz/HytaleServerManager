@@ -11,7 +11,16 @@ const storage = multer.diskStorage({
     if (!server) {
       return cb(new Error('Server not found'));
     }
-    cb(null, server.server_path);
+    
+    const uploadPath = req.query.path || req.body.path || '';
+    const targetPath = path.join(server.server_path, uploadPath);
+    
+    try {
+      await fs.mkdir(targetPath, { recursive: true });
+      cb(null, targetPath);
+    } catch (err) {
+      cb(err);
+    }
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -39,7 +48,6 @@ router.get('/', (req, res) => {
               const st = await fsPromises.stat(full);
               total += st.size || 0;
             } catch (e) {
-              // ignore file stat errors
             }
           }
         }
@@ -77,10 +85,8 @@ router.get('/', (req, res) => {
   }
 });
 
-// Get single server
 router.get('/:id', (req, res) => {
   try {
-    // Prefer dynamic server info from serverManager (includes live players)
     const manager = req.app && req.app.locals && req.app.locals.serverManager;
     if (manager) {
       const all = manager.getAllServers();
@@ -88,7 +94,6 @@ router.get('/:id', (req, res) => {
       if (found) return res.json(found);
     }
 
-    // Fallback to DB-stored server
     const server = req.app.locals.db.getServer(req.params.id);
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
@@ -99,7 +104,6 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// Update server metadata (e.g., name)
 router.put('/:id', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -108,7 +112,6 @@ router.put('/:id', async (req, res) => {
     const updates = req.body || {};
     const updated = await req.app.locals.db.updateServer(req.params.id, updates);
     if (!updated) return res.status(500).json({ error: 'Failed to update server' });
-    // Notify serverManager so WebSocket clients receive the update
     try {
       if (req.app && req.app.locals && req.app.locals.serverManager) {
         req.app.locals.serverManager.emit('update', {
@@ -127,7 +130,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Create new server
 router.post('/', async (req, res) => {
   try {
     const { name, port, maxPlayers, maxViewRadius, jvmArgs, useDownloader } = req.body;
@@ -136,7 +138,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Server name is required' });
     }
 
-    // Check if port is already assigned to another server in DB
     const desiredPort = parseInt(port) || 0;
     if (desiredPort) {
       const allServers = req.app.locals.db.getAllServers();
@@ -145,7 +146,6 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Port already assigned to another server' });
       }
 
-      // Check if port is currently in use on this machine
       const net = require('net');
       const isPortFree = await new Promise((resolve) => {
         const tester = net.createServer()
@@ -181,7 +181,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Download Hytale files
 router.post('/:id/download-hytale', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -196,10 +195,8 @@ router.post('/:id/download-hytale', async (req, res) => {
   }
 });
 
-// Setup Hytale downloader (downloads the downloader exe/zip)
 router.post('/hytale/setup', async (req, res) => {
   try {
-    // This endpoint is deprecated - use WebSocket connection instead
     res.json({
       success: true,
       message: 'Please use WebSocket connection for download with OAuth'
@@ -209,7 +206,6 @@ router.post('/hytale/setup', async (req, res) => {
   }
 });
 
-// Check Hytale cache status
 router.get('/hytale/check-cache', async (req, res) => {
   try {
     const result = await req.app.locals.serverManager.checkHytaleCache();
@@ -219,7 +215,6 @@ router.get('/hytale/check-cache', async (req, res) => {
   }
 });
 
-// Start server
 router.post('/:id/start', async (req, res) => {
   try {
     console.log('🚀 Start request for server:', req.params.id);
@@ -236,7 +231,7 @@ router.post('/:id/start', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Stop server
+
 router.post('/:id/stop', async (req, res) => {
   try {
     const result = await req.app.locals.serverManager.stopServer(parseInt(req.params.id));
@@ -246,7 +241,6 @@ router.post('/:id/stop', async (req, res) => {
   }
 });
 
-// Restart server
 router.post('/:id/restart', async (req, res) => {
   try {
     const result = await req.app.locals.serverManager.restartServer(parseInt(req.params.id));
@@ -256,7 +250,6 @@ router.post('/:id/restart', async (req, res) => {
   }
 });
 
-// Delete server
 router.delete('/:id', async (req, res) => {
   try {
     const result = await req.app.locals.serverManager.deleteServer(parseInt(req.params.id));
@@ -266,7 +259,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Upload files
 router.post('/:id/upload', upload.array('files'), async (req, res) => {
   try {
     res.json({ 
@@ -299,7 +291,6 @@ router.get('/:id/files', async (req, res) => {
             const stats = await fs.stat(filePath);
             size = stats.size;
           } catch (err) {
-            // Ignore errors
           }
         }
 
@@ -343,8 +334,6 @@ router.get('/:id/files/read', async (req, res) => {
   }
 });
 
-
-// Write file content
 router.post('/:id/files/write', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -363,7 +352,6 @@ router.post('/:id/files/write', async (req, res) => {
   }
 });
 
-// Delete file
 router.delete('/:id/files', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -371,16 +359,40 @@ router.delete('/:id/files', async (req, res) => {
       return res.status(404).json({ error: 'Server not found' });
     }
 
-    const filePath = path.join(server.server_path, req.query.path);
-    await fs.unlink(filePath);
+    const requestedPath = req.query.path;
+    if (!requestedPath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    const normalizedPath = requestedPath.replace(/\\/g, path.sep);
+    const fullPath = path.join(server.server_path, normalizedPath);
+    
+    if (!fullPath.startsWith(server.server_path)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    try {
+      await fs.access(fullPath);
+    } catch {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    await fs.unlink(fullPath);
     
     res.json({ success: true });
   } catch (error) {
+    console.error('Delete file error:', error);
+    
+    if (error.code === 'EBUSY' || error.code === 'EPERM') {
+      return res.status(409).json({ 
+        error: "Can't delete this file while the server is running. Please stop the server first." 
+      });
+    }
+    
     res.status(500).json({ error: error.message });
   }
 });
 
-// Download file
 router.get('/:id/files/download', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -395,7 +407,6 @@ router.get('/:id/files/download', async (req, res) => {
   }
 });
 
-// Get server stats
 router.get('/:id/stats', async (req, res) => {
   try {
     const stats = await req.app.locals.serverManager.getServerStats(parseInt(req.params.id));
@@ -408,8 +419,6 @@ router.get('/:id/stats', async (req, res) => {
   }
 });
 
-// ---- Config endpoints for frontend ----
-// Get server configuration
 router.get('/:id/config', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
@@ -422,14 +431,12 @@ router.get('/:id/config', async (req, res) => {
   }
 });
 
-// Update server configuration (replace full config object)
 router.put('/:id/config', async (req, res) => {
   try {
     const server = req.app.locals.db.getServer(req.params.id);
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     const config = req.body || {};
-    // Save each config key/value
     for (const key of Object.keys(config)) {
       await req.app.locals.db.saveServerConfig(parseInt(req.params.id), key, config[key]);
     }
@@ -440,7 +447,6 @@ router.put('/:id/config', async (req, res) => {
   }
 });
 
-// Get JVM args
 router.get('/:id/config/jvm', async (req, res) => {
   try {
     const cfg = await req.app.locals.db.getServerConfig(parseInt(req.params.id));
@@ -451,7 +457,6 @@ router.get('/:id/config/jvm', async (req, res) => {
   }
 });
 
-// Update JVM args
 router.put('/:id/config/jvm', async (req, res) => {
   try {
     const args = req.body.jvmArgs || [];
@@ -462,7 +467,6 @@ router.put('/:id/config/jvm', async (req, res) => {
   }
 });
 
-// Send command
 router.post('/:id/command', async (req, res) => {
   try {
     const { command } = req.body;
