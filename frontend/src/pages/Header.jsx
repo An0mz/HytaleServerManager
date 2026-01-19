@@ -60,7 +60,7 @@ export default function Header() {
             </div>
             <div>
               <h1 className="text-xl font-bold gradient-text">Hytale Server Manager</h1>
-              <p className="text-xs text-gray-500">v1.1.1</p>
+              <p className="text-xs text-gray-500">v1.1.2</p>
             </div>
           </Link>
 
@@ -165,7 +165,7 @@ export default function Header() {
                 {/* Footer */}
                 <div className={`px-4 py-2 border-t ${theme.border} ${theme.bgTertiary}`}>
                   <p className={`text-xs ${theme.textSecondary} text-center`}>
-                    Hytale Server Manager v1.1.1
+                    Hytale Server Manager 1.1.2
                   </p>
                 </div>
               </div>

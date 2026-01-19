@@ -255,7 +255,7 @@ export default function Login() {
         </div>
 
         <p className={`mt-6 text-center text-xs ${theme.textSecondary}`}>
-          Version 1.1.1 • Built with ❤️ for Hytale
+          Version 1.1.2 • Built with ❤️ for Hytale
         </p>
       </div>
     </div>
