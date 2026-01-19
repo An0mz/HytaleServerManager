@@ -374,10 +374,18 @@ router.delete('/:id/files', async (req, res) => {
     try {
       await fs.access(fullPath);
     } catch {
-      return res.status(404).json({ error: 'File not found' });
+      return res.status(404).json({ error: 'File or folder not found' });
     }
 
-    await fs.unlink(fullPath);
+    // Check if it's a directory
+    const stats = await fs.stat(fullPath);
+    if (stats.isDirectory()) {
+      // Remove directory recursively
+      await fs.rm(fullPath, { recursive: true, force: true });
+    } else {
+      // Remove file
+      await fs.unlink(fullPath);
+    }
     
     res.json({ success: true });
   } catch (error) {

@@ -23,7 +23,7 @@ export default function FileManager({ serverId, serverStatus }) {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, filePath: '', fileName: '' });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, filePath: '', fileName: '', isFolder: false });
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -121,8 +121,8 @@ export default function FileManager({ serverId, serverStatus }) {
     }
   };
 
-  const handleDelete = async (filePath, fileName) => {
-    setDeleteModal({ isOpen: true, filePath, fileName });
+  const handleDelete = async (filePath, fileName, isFolder) => {
+    setDeleteModal({ isOpen: true, filePath, fileName, isFolder });
   };
 
   const confirmDelete = async () => {
@@ -397,7 +397,7 @@ export default function FileManager({ serverId, serverStatus }) {
                   </div>
 
                   <div className="flex items-center space-x-2 pointer-events-auto">
-                    {!file.isDirectory && (
+                    {!file.isDirectory ? (
                       <>
                         {canView(file.name) && (
                           <button
@@ -421,23 +421,23 @@ export default function FileManager({ serverId, serverStatus }) {
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(file.path, file.name);
-                          }}
-                          disabled={serverStatus === 'running'}
-                          className={`p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
-                            serverStatus === 'running'
-                              ? 'bg-gray-600/20 text-gray-500 cursor-not-allowed'
-                              : 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
-                          }`}
-                          title={serverStatus === 'running' ? 'Cannot delete while server is running' : 'Delete'}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
                       </>
-                    )}
+                    ) : null}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(file.path, file.name, file.isDirectory);
+                      }}
+                      disabled={serverStatus === 'running'}
+                      className={`p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
+                        serverStatus === 'running'
+                          ? 'bg-gray-600/20 text-gray-500 cursor-not-allowed'
+                          : 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
+                      }`}
+                      title={serverStatus === 'running' ? 'Cannot delete while server is running' : file.isDirectory ? 'Delete Folder' : 'Delete'}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -458,14 +458,16 @@ export default function FileManager({ serverId, serverStatus }) {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, filePath: '', fileName: '' })}
+        onClose={() => setDeleteModal({ isOpen: false, filePath: '', fileName: '', isFolder: false })}
         onConfirm={confirmDelete}
-        title="Delete File"
-        message={`Are you sure you want to delete "${deleteModal.fileName}"?`}
+        title={deleteModal.isFolder ? "Delete Folder" : "Delete File"}
+        message={deleteModal.isFolder 
+          ? `Are you sure you want to delete the folder "${deleteModal.fileName}" and all its contents? This action cannot be undone.`
+          : `Are you sure you want to delete "${deleteModal.fileName}"?`}
         confirmText="Delete"
         cancelText="Cancel"
         danger={true}
-        warning={serverStatus === 'running' ? '⚠️ WARNING: The server is currently running! Deleting files while the server is running may cause issues or require a restart.' : null}
+        warning={serverStatus === 'running' ? '⚠️ WARNING: The server is currently running! Deleting while the server is running may cause issues or require a restart.' : null}
       />
     </>
   );
