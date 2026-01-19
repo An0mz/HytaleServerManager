@@ -14,6 +14,8 @@ import {
 import * as api from '../services/api';
 import websocket from '../services/websocket';
 import Header from './Header';
+import ConfirmModal from '../components/ConfirmModal';
+import { ServerCardSkeleton, ListSkeleton } from '../components/Skeletons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [wsConnected, setWsConnected] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, serverId: null, serverName: '' });
 
   useEffect(() => {
     loadServers();
@@ -104,14 +107,17 @@ export default function Dashboard() {
   const handleDelete = async (serverId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm('Delete this server permanently?')) {
-      try {
-        await api.deleteServer(serverId);
-        setServers(prev => prev.filter(s => s.id !== serverId));
-        toast.success('Server deleted successfully');
-      } catch (error) {
-        toast.error('Failed to delete: ' + error.message);
-      }
+    const server = servers.find(s => s.id === serverId);
+    setDeleteModal({ isOpen: true, serverId, serverName: server?.name || 'this server' });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await api.deleteServer(deleteModal.serverId);
+      setServers(prev => prev.filter(s => s.id !== deleteModal.serverId));
+      toast.success('Server deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete: ' + error.message);
     }
   };
 
@@ -141,8 +147,91 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme.bg}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-500"></div>
+      <div className={`min-h-screen ${theme.bg}`}>
+        <Header />
+        <div className={`min-h-screen ${theme.bg} p-6`}>
+          {/* Stats Bar Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className={`${theme.card} p-4 animate-pulse`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-700 rounded w-20 mb-2" />
+                    <div className="h-8 bg-gray-700 rounded w-16 mb-2" />
+                    <div className="h-3 bg-gray-700 rounded w-24" />
+                  </div>
+                  <div className="w-10 h-10 bg-gray-700 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Server List Skeleton */}
+          <div className={theme.card}>
+            <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between animate-pulse`}>
+              <div className="h-6 bg-gray-700 rounded w-32" />
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-48 bg-gray-700 rounded-lg" />
+                <div className="h-10 w-40 bg-gray-700 rounded-lg" />
+              </div>
+            </div>
+
+            {/* Table Skeleton */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className={`${theme.bgTertiary} border-b ${theme.border}`}>
+                  <tr>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textSecondary} uppercase tracking-wider`}>
+                      <div className="h-4 bg-gray-700 rounded w-24 animate-pulse" />
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textSecondary} uppercase tracking-wider`}>
+                      <div className="h-4 bg-gray-700 rounded w-16 animate-pulse" />
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textSecondary} uppercase tracking-wider`}>
+                      <div className="h-4 bg-gray-700 rounded w-20 animate-pulse" />
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textSecondary} uppercase tracking-wider`}>
+                      <div className="h-4 bg-gray-700 rounded w-16 animate-pulse" />
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textSecondary} uppercase tracking-wider`}>
+                      <div className="h-4 bg-gray-700 rounded w-24 animate-pulse" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className={`${theme.bg} divide-y ${theme.border}`}>
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gray-700 rounded-xl" />
+                          <div>
+                            <div className="h-5 bg-gray-700 rounded w-32 mb-2" />
+                            <div className="h-4 bg-gray-700 rounded w-24" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-16" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-12" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-20" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-gray-700 rounded-full" />
+                          <div className="h-4 bg-gray-700 rounded w-16" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -356,6 +445,19 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={deleteModal.isOpen}
+          onClose={() => setDeleteModal({ isOpen: false, serverId: null, serverName: '' })}
+          onConfirm={confirmDelete}
+          title="Delete Server"
+          message={`Are you sure you want to delete "${deleteModal.serverName}"?`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          danger={true}
+          warning="This action cannot be undone. All server files and configurations will be permanently deleted."
+        />
       </>
   );
 }

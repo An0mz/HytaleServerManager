@@ -12,6 +12,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 import Header from './Header';
+import ConfirmModal from '../components/ConfirmModal';
+import { UserRowSkeleton, ListSkeleton } from '../components/Skeletons';
 
 export default function Users() {
   const { user: currentUser } = useAuth();
@@ -22,6 +24,7 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [resetting, setResetting] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, userId: null, username: '' });
 
   useEffect(() => {
     loadUsers();
@@ -60,12 +63,12 @@ export default function Users() {
   };
 
   const handleDeleteUser = async (user) => {
-    if (!window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
-      return;
-    }
+    setDeleteModal({ isOpen: true, userId: user.id, username: user.username });
+  };
 
+  const confirmDelete = async () => {
     try {
-      await api.deleteUser(user.id);
+      await api.deleteUser(deleteModal.userId);
       toast.success('User deleted successfully');
       loadUsers();
     } catch (error) {
@@ -75,9 +78,18 @@ export default function Users() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${theme.bg} flex items-center justify-center`}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-      </div>
+      <>
+        <Header />
+        <div className={`min-h-screen ${theme.bg} p-6`}>
+          <div className="max-w-4xl mx-auto">
+            <div className={theme.card + " mb-6 p-6"}>
+              <div className="h-8 bg-gray-700 rounded w-32 mb-2 animate-pulse" />
+              <div className="h-4 bg-gray-700 rounded w-48 animate-pulse" />
+            </div>
+            <ListSkeleton count={5} ItemSkeleton={UserRowSkeleton} />
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -240,6 +252,19 @@ export default function Users() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, userId: null, username: '' })}
+        onConfirm={confirmDelete}
+        title="Delete User"
+        message={`Are you sure you want to delete user "${deleteModal.username}"?`}
+        confirmText="Delete User"
+        cancelText="Cancel"
+        danger={true}
+        warning="This action cannot be undone. The user will lose access to the system."
+      />
     </>
   );
 }

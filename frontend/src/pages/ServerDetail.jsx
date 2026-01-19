@@ -17,6 +17,7 @@ import StatsPanel from '../components/StatsPanel';
 import BackupManager from '../components/BackupManager';
 import ServerSettings from '../components/ServerSettings';
 import Header from './Header';
+import { StatsRowSkeleton } from '../components/Skeletons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -164,11 +165,46 @@ export default function ServerDetail() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${theme.bg} flex items-center justify-center`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className={`mt-4 ${theme.textSecondary}`}>Loading server...</p>
-        </div>
+      <div className={`min-h-screen ${theme.bg}`}>
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header skeleton */}
+          <div className={`${theme.card} p-6 mb-6 animate-pulse`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-4 flex-1">
+                <div className="w-8 h-8 bg-gray-700 rounded" />
+                <div className="flex-1">
+                  <div className="h-8 bg-gray-700 rounded w-48 mb-2" />
+                  <div className="h-4 bg-gray-700 rounded w-32" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="w-24 h-10 bg-gray-700 rounded-xl" />
+                <div className="w-24 h-10 bg-gray-700 rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Stats skeleton */}
+          <StatsRowSkeleton />
+          
+          {/* Tabs skeleton */}
+          <div className="mt-6">
+            <div className="flex gap-2 mb-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="h-10 w-24 bg-gray-700 rounded-lg animate-pulse" />
+              ))}
+            </div>
+            {/* Content skeleton */}
+            <div className={`${theme.card} p-6 animate-pulse`}>
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-4 bg-gray-700 rounded" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }

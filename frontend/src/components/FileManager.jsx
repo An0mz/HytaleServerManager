@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import FileViewer from './FileViewer';
+import ConfirmModal from './ConfirmModal';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -22,6 +23,7 @@ export default function FileManager({ serverId, serverStatus }) {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, filePath: '', fileName: '' });
 
   // Get current path from URL
   const currentPath = searchParams.get('path') || '';
@@ -97,17 +99,13 @@ export default function FileManager({ serverId, serverStatus }) {
     }
   };
 
-  const handleDelete = async (filePath) => {
-    let confirmMessage = 'Are you sure you want to delete this file?';
-    
-    if (serverStatus === 'running') {
-      confirmMessage = '⚠️ WARNING: The server is currently running!\n\nDeleting files while the server is running may cause issues or require a restart.\n\nAre you sure you want to continue?';
-    }
-    
-    if (!window.confirm(confirmMessage)) return;
+  const handleDelete = async (filePath, fileName) => {
+    setDeleteModal({ isOpen: true, filePath, fileName });
+  };
 
+  const confirmDelete = async () => {
     try {
-      await api.deleteFile(serverId, filePath);
+      await api.deleteFile(serverId, deleteModal.filePath);
       await loadFiles();
       toast.success('File deleted successfully');
     } catch (error) {
@@ -248,7 +246,7 @@ export default function FileManager({ serverId, serverStatus }) {
                         <ArrowDownTrayIcon className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(file.path)}
+                        onClick={() => handleDelete(file.path, file.name)}
                         disabled={serverStatus === 'running'}
                         className={`p-2 rounded-lg transition-all ${
                           serverStatus === 'running'
@@ -276,6 +274,19 @@ export default function FileManager({ serverId, serverStatus }) {
           onClose={() => setSelectedFile(null)}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, filePath: '', fileName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete File"
+        message={`Are you sure you want to delete "${deleteModal.fileName}"?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+        warning={serverStatus === 'running' ? '⚠️ WARNING: The server is currently running! Deleting files while the server is running may cause issues or require a restart.' : null}
+      />
     </>
   );
 }

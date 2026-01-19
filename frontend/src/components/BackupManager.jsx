@@ -3,6 +3,7 @@ import { ArrowDownTrayIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24
 import * as api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
+import ConfirmModal from './ConfirmModal';
 
 export default function BackupManager({ serverId }) {
   const { theme } = useTheme();
@@ -11,6 +12,8 @@ export default function BackupManager({ serverId }) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [backupName, setBackupName] = useState('');
+  const [restoreModal, setRestoreModal] = useState({ isOpen: false, backupId: null, backupName: '' });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, backupId: null, backupName: '' });
 
   useEffect(() => {
     loadBackups();
@@ -41,26 +44,30 @@ export default function BackupManager({ serverId }) {
     }
   };
 
-  const handleRestore = async (backupId) => {
-    if (window.confirm('Are you sure you want to restore this backup? This will overwrite current server files.')) {
-      try {
-        await api.restoreBackup(serverId, backupId);
-        toast.success('Backup restored successfully');
-      } catch (error) {
-        toast.error('Failed to restore backup: ' + error.message);
-      }
+  const handleRestore = async (backupId, backupName) => {
+    setRestoreModal({ isOpen: true, backupId, backupName });
+  };
+
+  const confirmRestore = async () => {
+    try {
+      await api.restoreBackup(serverId, restoreModal.backupId);
+      toast.success('Backup restored successfully');
+    } catch (error) {
+      toast.error('Failed to restore backup: ' + error.message);
     }
   };
 
-  const handleDelete = async (backupId) => {
-    if (window.confirm('Are you sure you want to delete this backup?')) {
-      try {
-        await api.deleteBackup(serverId, backupId);
-        loadBackups();
-        toast.success('Backup deleted successfully');
-      } catch (error) {
-        toast.error('Failed to delete backup: ' + error.message);
-      }
+  const handleDelete = async (backupId, backupName) => {
+    setDeleteModal({ isOpen: true, backupId, backupName });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await api.deleteBackup(serverId, deleteModal.backupId);
+      loadBackups();
+      toast.success('Backup deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete backup: ' + error.message);
     }
   };
 
@@ -125,14 +132,14 @@ export default function BackupManager({ serverId }) {
                     <ArrowDownTrayIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => handleRestore(backup.id)}
+                    onClick={() => handleRestore(backup.id, backup.backup_name)}
                     className={`p-2 ${theme.textSecondary} hover:text-blue-400 transition-colors`}
                     title="Restore"
                   >
                     <ArrowPathIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(backup.id)}
+                    onClick={() => handleDelete(backup.id, backup.backup_name)}
                     className={`p-2 ${theme.textSecondary} hover:text-red-400 transition-colors`}
                     title="Delete"
                   >
@@ -144,6 +151,32 @@ export default function BackupManager({ serverId }) {
           </div>
         )}
       </div>
+
+      {/* Restore Confirmation Modal */}
+      <ConfirmModal
+        isOpen={restoreModal.isOpen}
+        onClose={() => setRestoreModal({ isOpen: false, backupId: null, backupName: '' })}
+        onConfirm={confirmRestore}
+        title="Restore Backup"
+        message={`Are you sure you want to restore "${restoreModal.backupName}"?`}
+        confirmText="Restore"
+        cancelText="Cancel"
+        danger={true}
+        warning="This will overwrite current server files. Make sure to create a backup of your current state if needed."
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, backupId: null, backupName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Backup"
+        message={`Are you sure you want to delete "${deleteModal.backupName}"?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+        warning="This action cannot be undone."
+      />
     </div>
   );
 }
