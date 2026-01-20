@@ -70,14 +70,25 @@ module.exports = (database) => {
       
       for (const file of files) {
         const filePath = path.join(modsDir, file);
-        const stats = await fs.stat(filePath);
         
-        if (stats.isFile() && (file.endsWith('.jar') || file.endsWith('.zip'))) {
-          mods.push({
-            name: file,
-            size: stats.size,
-            modified: stats.mtime.toISOString()
-          });
+        try {
+          const stats = await fs.stat(filePath);
+          
+          // Only include files (not directories) with .jar or .zip extension
+          if (stats.isFile()) {
+            const ext = path.extname(file).toLowerCase();
+            if (ext === '.jar' || ext === '.zip') {
+              mods.push({
+                name: file,
+                size: stats.size,
+                modified: stats.mtime.toISOString()
+              });
+            }
+          }
+        } catch (err) {
+          // Skip files that can't be accessed
+          console.warn(`Skipping file ${file}: ${err.message}`);
+          continue;
         }
       }
       
