@@ -31,7 +31,7 @@ FROM node:20-slim
 
 # Install OpenJDK 21 JRE from Adoptium
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget apt-transport-https gnupg && \
+    apt-get install -y --no-install-recommends ca-certificates wget apt-transport-https gnupg && \
     mkdir -p /etc/apt/keyrings && \
     wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list && \
