@@ -29,14 +29,14 @@ RUN npm ci --only=production
 # Stage 3: Final runtime image
 FROM node:20-slim
 
-# Install OpenJDK 21 JRE from Adoptium
+# Install OpenJDK 25 JRE from Adoptium
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates wget apt-transport-https gnupg && \
     mkdir -p /etc/apt/keyrings && \
     wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends temurin-21-jre && \
+    apt-get install -y --no-install-recommends temurin-25-jre && \
     apt-get remove -y wget apt-transport-https gnupg && \
     apt-get autoremove -y && \
     apt-get clean && \
