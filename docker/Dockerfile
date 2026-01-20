@@ -61,4 +61,4 @@ USER nodejs
 EXPOSE 3000 5520-5530/udp
 
 # Start backend
-CMD ["node", "index.js"]
+CMD ["node", "src/index.js"]
