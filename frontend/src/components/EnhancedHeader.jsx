@@ -135,7 +135,7 @@ export default function EnhancedHeader() {
               </div>
               <div>
                 <h1 className="text-xl font-bold gradient-text">Hytale Server Manager</h1>
-                <p className="text-xs text-gray-500">v1.1.2</p>
+                <p className="text-xs text-gray-500">v1.1.3</p>
               </div>
             </Link>
 
