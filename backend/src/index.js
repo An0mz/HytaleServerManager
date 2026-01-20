@@ -15,7 +15,6 @@ const serverRoutes = require('./routes/servers');
 const configRoutes = require('./routes/config');
 const backupRoutes = require('./routes/backups');
 const userRoutes = require('./routes/users');
-const activityRoutes = require('./routes/activity');
 const notificationRoutes = require('./routes/notifications');
 const modsRoutes = require('./routes/mods');
 
@@ -96,7 +95,6 @@ app.use('/api/config', configRoutes);
 app.use('/api/backups', backupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes(db));
-app.use('/api/activity', activityRoutes);
 app.use('/api/mods', modsRoutes(db));
 
 app.get('/api/health', (req, res) => {
