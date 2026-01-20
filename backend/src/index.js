@@ -16,6 +16,8 @@ const configRoutes = require('./routes/config');
 const backupRoutes = require('./routes/backups');
 const userRoutes = require('./routes/users');
 const activityRoutes = require('./routes/activity');
+const notificationRoutes = require('./routes/notifications');
+const modsRoutes = require('./routes/mods');
 
 // Validate and set JWT_SECRET
 let JWT_SECRET = process.env.JWT_SECRET;
@@ -93,7 +95,9 @@ app.use('/api/servers', serverRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/backups', backupRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes(db));
 app.use('/api/activity', activityRoutes);
+app.use('/api/mods', modsRoutes(db));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

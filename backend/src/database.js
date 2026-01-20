@@ -25,7 +25,8 @@ class DatabaseManager {
       servers: [],
       server_configs: [],
       backups: [],
-      permissions: []
+      permissions: [],
+      notifications: []
     }).write();
 
     console.log('Database initialized');
@@ -198,6 +199,65 @@ class DatabaseManager {
 
   getUserByUsername(username) {
     return this.db.get('users').find({ username }).value();
+  }
+
+  // Notification methods
+  createNotification(notificationData) {
+    const notifications = this.db.get('notifications').value();
+    const id = notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1;
+    
+    const notification = {
+      id,
+      type: notificationData.type,
+      title: notificationData.title,
+      message: notificationData.message,
+      server_id: notificationData.serverId || null,
+      server_name: notificationData.serverName || null,
+      created_at: new Date().toISOString(),
+      read: false
+    };
+    
+    this.db.get('notifications').push(notification).write();
+    
+    // Auto-prune old notifications (keep max 1000)
+    const allNotifications = this.db.get('notifications').value();
+    if (allNotifications.length > 1000) {
+      const toRemove = allNotifications.length - 1000;
+      const oldest = allNotifications.slice(0, toRemove).map(n => n.id);
+      oldest.forEach(id => {
+        this.db.get('notifications').remove({ id }).write();
+      });
+    }
+    
+    return id;
+  }
+
+  getNotifications(limit = 50) {
+    return this.db.get('notifications')
+      .orderBy(['created_at'], ['desc'])
+      .take(limit)
+      .value() || [];
+  }
+
+  markNotificationRead(id) {
+    this.db.get('notifications')
+      .find({ id: parseInt(id) })
+      .assign({ read: true })
+      .write();
+  }
+
+  markAllNotificationsRead() {
+    const notifications = this.db.get('notifications').value();
+    notifications.forEach(n => {
+      this.db.get('notifications')
+        .find({ id: n.id })
+        .assign({ read: true })
+        .write();
+    });
+  }
+
+  clearNotifications() {
+    this.db.set('notifications', []).write();
   }
 
   close() {

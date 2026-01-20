@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { Toaster } from './components/ui/sonner';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
         </Routes>
       </Router>
+      <Toaster position="bottom-right" richColors />
     </ToastProvider>
   );
 }

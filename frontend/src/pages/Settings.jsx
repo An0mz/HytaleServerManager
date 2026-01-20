@@ -8,7 +8,7 @@ import {
 import * as api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
-import Header from './Header';
+import EnhancedHeader from '../components/EnhancedHeader';
 import Users from './Users';
 
 export default function Settings() {
@@ -54,7 +54,7 @@ export default function Settings() {
   if (user?.role === 'temp_admin') {
     return (
       <>
-        <Header />
+        <EnhancedHeader />
         <div className="min-h-screen p-6 flex items-center justify-center">
           <div className="max-w-md">
             <div className="card p-8 text-center">
@@ -75,7 +75,7 @@ export default function Settings() {
   
   return (
     <>
-      <Header />
+      <EnhancedHeader />
       <div className={`min-h-screen ${theme.bg} p-6`}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}

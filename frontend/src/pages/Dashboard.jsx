@@ -13,9 +13,11 @@ import {
 } from '@heroicons/react/24/outline';
 import * as api from '../services/api';
 import websocket from '../services/websocket';
-import Header from './Header';
+import EnhancedHeader from '../components/EnhancedHeader';
 import ConfirmModal from '../components/ConfirmModal';
 import { ServerCardSkeleton, ListSkeleton } from '../components/Skeletons';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -141,7 +143,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className={`min-h-screen ${theme.bg}`}>
-        <Header />
+        <EnhancedHeader />
         <div className={`min-h-screen ${theme.bg} p-6`}>
           {/* Stats Bar Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -231,58 +233,58 @@ export default function Dashboard() {
 
   return (
       <>
-    <Header />
+    <EnhancedHeader />
         <div className={`min-h-screen ${theme.bg} p-6`}>
           {/* Stats Bar */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Total Servers Card */}
-            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+            <Card className={`relative overflow-hidden group hover:scale-[1.02] transition-transform ${theme.card}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
+              <CardContent className="p-4 relative">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-cyan-500/20`}>
+                  <div className="p-2 rounded-lg bg-cyan-500/20">
                     <CircleStackIcon className="h-5 w-5 text-cyan-400" />
                   </div>
-                  <div className={`text-xs px-2 py-0.5 rounded-full ${stats.running > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-600/20 text-gray-400'}`}>
+                  <Badge variant={stats.running > 0 ? 'success' : 'secondary'}>
                     {stats.running > 0 ? 'Active' : 'Idle'}
-                  </div>
+                  </Badge>
                 </div>
                 <div>
-                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Total Servers</p>
+                  <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>Total Servers</p>
                   <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.total}</p>
                   <div className="flex items-center space-x-3 text-xs">
                     <span className="flex items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1" />
                       <span className="text-emerald-400 font-semibold">{stats.running}</span>
-                      <span className={`${theme.textSecondary} ml-1`}>online</span>
+                      <span className={theme.textSecondary + " ml-1"}>online</span>
                     </span>
                     <span className="flex items-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1" />
-                      <span className="text-gray-400 font-semibold">{stats.offline}</span>
-                      <span className={`${theme.textSecondary} ml-1`}>offline</span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${theme.textSecondary} mr-1`} />
+                      <span className={`${theme.textSecondary} font-semibold`}>{stats.offline}</span>
+                      <span className={theme.textSecondary + " ml-1"}>offline</span>
                     </span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Players Card */}
-            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+            <Card className={`relative overflow-hidden group hover:scale-[1.02] transition-transform ${theme.card}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
+              <CardContent className="p-4 relative">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-blue-500/20`}>
+                  <div className="p-2 rounded-lg bg-blue-500/20">
                     <UsersIcon className="h-5 w-5 text-blue-400" />
                   </div>
-                  <div className={`text-xs px-2 py-0.5 rounded-full ${stats.players > 0 ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-600/20 text-gray-400'}`}>
+                  <Badge variant={stats.players > 0 ? 'default' : 'secondary'}>
                     {stats.players > 0 ? 'Playing' : 'Empty'}
-                  </div>
+                  </Badge>
                 </div>
                 <div>
-                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Active Players</p>
+                  <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>Active Players</p>
                   <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.players}</p>
                   <div className="flex items-center space-x-2">
-                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                    <div className={`flex-1 ${theme.bgTertiary} rounded-full h-1.5 overflow-hidden`}>
                       <div 
                         className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
                         style={{ width: `${stats.maxPlayers > 0 ? (stats.players / stats.maxPlayers * 100) : 0}%` }}
@@ -291,30 +293,30 @@ export default function Dashboard() {
                     <span className={`text-xs ${theme.textSecondary}`}>{stats.maxPlayers} max</span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* CPU Usage Card */}
-            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+            <Card className={`relative overflow-hidden group hover:scale-[1.02] transition-transform ${theme.card}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
+              <CardContent className="p-4 relative">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-purple-500/20`}>
+                  <div className="p-2 rounded-lg bg-purple-500/20">
                     <CpuChipIcon className="h-5 w-5 text-purple-400" />
                   </div>
-                  <div className={`text-xs px-2 py-0.5 rounded-full ${
-                    stats.cpuTotal > 75 ? 'bg-red-500/20 text-red-400' : 
-                    stats.cpuTotal > 50 ? 'bg-yellow-500/20 text-yellow-400' : 
-                    'bg-emerald-500/20 text-emerald-400'
-                  }`}>
+                  <Badge variant={
+                    stats.cpuTotal > 75 ? 'destructive' : 
+                    stats.cpuTotal > 50 ? 'warning' : 
+                    'success'
+                  }>
                     {stats.cpuTotal > 75 ? 'High' : stats.cpuTotal > 50 ? 'Medium' : 'Low'}
-                  </div>
+                  </Badge>
                 </div>
                 <div>
-                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>CPU Usage</p>
+                  <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>CPU Usage</p>
                   <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.cpuTotal}%</p>
                   <div className="flex items-center space-x-2">
-                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                    <div className={`flex-1 ${theme.bgTertiary} rounded-full h-1.5 overflow-hidden`}>
                       <div 
                         className={`h-full transition-all duration-500 ${
                           stats.cpuTotal > 75 ? 'bg-gradient-to-r from-red-600 to-red-400' : 
@@ -327,30 +329,30 @@ export default function Dashboard() {
                     <span className={`text-xs ${theme.textSecondary}`}>all servers</span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Memory Usage Card */}
-            <div className={`${theme.card} p-4 relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+            <Card className={`relative overflow-hidden group hover:scale-[1.02] transition-transform ${theme.card}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
+              <CardContent className="p-4 relative">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-pink-500/20`}>
+                  <div className="p-2 rounded-lg bg-pink-500/20">
                     <CircleStackIcon className="h-5 w-5 text-pink-400" />
                   </div>
-                  <div className={`text-xs px-2 py-0.5 rounded-full ${
-                    stats.memoryTotal > 32768 ? 'bg-red-500/20 text-red-400' : 
-                    stats.memoryTotal > 16384 ? 'bg-yellow-500/20 text-yellow-400' : 
-                    'bg-emerald-500/20 text-emerald-400'
-                  }`}>
+                  <Badge variant={
+                    stats.memoryTotal > 32768 ? 'destructive' : 
+                    stats.memoryTotal > 16384 ? 'warning' : 
+                    'success'
+                  }>
                     {stats.memoryTotal > 32768 ? 'High' : stats.memoryTotal > 16384 ? 'Medium' : 'Low'}
-                  </div>
+                  </Badge>
                 </div>
                 <div>
-                  <p className={`${theme.textSecondary} text-xs font-medium mb-1`}>Memory Usage</p>
+                  <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>Memory Usage</p>
                   <p className={`text-3xl font-bold ${theme.text} mb-2`}>{stats.memoryTotal} MB</p>
                   <div className="flex items-center space-x-2">
-                    <div className="flex-1 bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                    <div className={`flex-1 ${theme.bgTertiary} rounded-full h-1.5 overflow-hidden`}>
                       <div 
                         className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500"
                         style={{ width: `${Math.min((stats.memoryTotal / 327.68), 100)}%` }}
@@ -359,16 +361,16 @@ export default function Dashboard() {
                     <span className={`text-xs ${theme.textSecondary}`}>all servers</span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Server List */}
-          <div className={`${theme.card} overflow-hidden`}>
-            <div className={`px-6 py-5 ${theme.bgSecondary} border-b ${theme.border} flex items-center justify-between`}>
+          <Card className={theme.card}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
-                <h2 className={`text-2xl font-bold ${theme.text} mb-1`}>Server Overview</h2>
-                <p className={`text-sm ${theme.textSecondary}`}>Manage and monitor all your Hytale servers</p>
+                <CardTitle className={`text-2xl mb-1 ${theme.text}`}>Server Overview</CardTitle>
+                <CardDescription className={theme.textSecondary}>Manage and monitor all your Hytale servers</CardDescription>
               </div>
               <div className="flex items-center space-x-4">
                 <input
@@ -386,10 +388,11 @@ export default function Dashboard() {
                   <span>New Server</span>
                 </Link>
               </div>
-            </div>
+            </CardHeader>
 
             {/* Table */}
-            <div className="overflow-x-auto">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className={`${theme.bgTertiary} border-b ${theme.border}`}>
                   <tr>
@@ -584,16 +587,17 @@ export default function Dashboard() {
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {filteredServers.length > 0 && (
-              <div className="px-6 py-4 border-t border-gray-700/50">
-                <p className="text-sm text-gray-500">
-                  Showing 1 to {filteredServers.length} of {filteredServers.length} entries
-                </p>
+              
+              {filteredServers.length > 0 && (
+                <div className="px-6 py-4 border-t border-gray-700/50">
+                  <p className="text-sm text-gray-500">
+                    Showing 1 to {filteredServers.length} of {filteredServers.length} entries
+                  </p>
+                </div>
+              )}
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Delete Confirmation Modal */}

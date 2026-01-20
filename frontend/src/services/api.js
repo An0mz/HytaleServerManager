@@ -92,4 +92,21 @@ export const getUsers = () => api.get('/users');
 export const resetUserPassword = (userId, newPassword) => api.put(`/users/${userId}/password`, { newPassword });
 export const deleteUser = (userId) => api.delete(`/users/${userId}`);
 
+// Notifications
+export const getNotifications = (limit = 50) => api.get(`/notifications?limit=${limit}`);
+export const markNotificationRead = (id) => api.post(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.post('/notifications/read-all');
+export const clearNotifications = () => api.delete('/notifications');
+
+// Mods
+export const getMods = (serverId) => api.get(`/mods/${serverId}`);
+export const uploadMod = (serverId, file) => {
+  const formData = new FormData();
+  formData.append('mod', file);
+  return api.post(`/mods/${serverId}/upload`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+export const deleteMod = (serverId, filename) => api.delete(`/mods/${serverId}/${encodeURIComponent(filename)}`);
+
 export default api;

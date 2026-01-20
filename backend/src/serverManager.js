@@ -26,6 +26,31 @@ constructor(db) {
   this.ensureHytaleCache();
 }
 
+  createNotification(type, title, message, serverId = null) {
+    try {
+      const server = serverId ? this.db.getServer(serverId) : null;
+      this.db.createNotification({
+        type,
+        title,
+        message,
+        serverId,
+        serverName: server ? server.name : null
+      });
+      
+      // Emit notification event for websocket
+      this.emit('notification', {
+        type,
+        title,
+        message,
+        serverId,
+        serverName: server ? server.name : null,
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to create notification:', error);
+    }
+  }
+
   async ensureHytaleCache() {
     try {
       await fs.mkdir(this.hytaleCache, { recursive: true });
@@ -394,6 +419,15 @@ constructor(db) {
       } catch (e) {}
       this.db.updateServerStatus(serverId, 'stopped');
       
+      // Create notification
+      const server = this.db.getServer(serverId);
+      this.createNotification(
+        'server.stopped',
+        'Server Stopped',
+        `Server "${server.name}" has stopped (exit code: ${code})`,
+        serverId
+      );
+      
       this.emit('update', {
         type: 'server_stopped',
         serverId,
@@ -415,8 +449,15 @@ constructor(db) {
         if (serverInstance.statsInterval) clearInterval(serverInstance.statsInterval);
       } catch (e) {}
       this.db.updateServerStatus(serverId, 'stopped');
-      
-      this.emit('update', {
+            // Create notification
+      const server = this.db.getServer(serverId);
+      this.createNotification(
+        'server.error',
+        'Server Error',
+        `Server "${server.name}" encountered an error: ${error.message}`,
+        serverId
+      );
+            this.emit('update', {
         type: 'server_status_changed',
         serverId,
         status: 'stopped',
@@ -450,6 +491,15 @@ constructor(db) {
     if (readyPatterns.some(pattern => pattern.test(output))) {
       console.log(`Server ${serverId} is ready!`);
       this.db.updateServerStatus(serverId, 'running');
+      
+      // Create notification
+      const server = this.db.getServer(serverId);
+      this.createNotification(
+        'server.started',
+        'Server Started',
+        `Server "${server.name}" is now online`,
+        serverId
+      );
       
       // Update config.json with server name
       this.updateServerConfigName(serverId);

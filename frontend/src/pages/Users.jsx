@@ -11,7 +11,7 @@ import * as api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
-import Header from './Header';
+import EnhancedHeader from '../components/EnhancedHeader';
 import ConfirmModal from '../components/ConfirmModal';
 import { UserRowSkeleton, ListSkeleton } from '../components/Skeletons';
 
@@ -79,7 +79,7 @@ export default function Users() {
   if (loading) {
     return (
       <>
-        <Header />
+        <EnhancedHeader />
         <div className={`min-h-screen ${theme.bg} p-6`}>
           <div className="max-w-4xl mx-auto">
             <div className={theme.card + " mb-6 p-6"}>
@@ -95,7 +95,7 @@ export default function Users() {
 
   return (
     <>
-      <Header />
+      <EnhancedHeader />
       <div className={`min-h-screen ${theme.bg} p-6`}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}

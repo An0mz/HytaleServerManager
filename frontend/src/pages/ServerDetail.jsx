@@ -16,7 +16,9 @@ import StatsPanel from '../components/StatsPanel';
 import BackupManager from '../components/BackupManager';
 import ServerSettings from '../components/ServerSettings';
 import ActivityFeed from '../components/ActivityFeed';
-import Header from './Header';
+import ModsManager from '../components/ModsManager';
+import { HistoricalStatsChart, CombinedStatsChart } from '../components/HistoricalStatsChart';
+import EnhancedHeader from '../components/EnhancedHeader';
 import { StatsRowSkeleton } from '../components/Skeletons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
@@ -160,6 +162,7 @@ export default function ServerDetail() {
     { id: 'files', name: 'File Manager' },
     { id: 'backups', name: 'Backups' },
     { id: 'stats', name: 'Statistics' },
+    { id: 'mods', name: 'Mods' },
     { id: 'activity', name: 'Activity' },
     { id: 'settings', name: 'Settings' },
   ];
@@ -167,7 +170,7 @@ export default function ServerDetail() {
   if (loading) {
     return (
       <div className={`min-h-screen ${theme.bg}`}>
-        <Header />
+        <EnhancedHeader />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header skeleton */}
           <div className={`${theme.card} p-6 mb-6 animate-pulse`}>
@@ -242,7 +245,7 @@ export default function ServerDetail() {
 
   return (
       <>
-    <Header />
+    <EnhancedHeader />
       <div className={`min-h-screen ${theme.bg} p-6`}>
         {/* Auth Modal */}
         {authModal && (
@@ -431,6 +434,7 @@ export default function ServerDetail() {
           {activeTab === 'files' && <FileManager serverId={id} serverStatus={server.status} />}
           {activeTab === 'backups' && <BackupManager serverId={id} />}
           {activeTab === 'stats' && <StatsPanel serverId={id} serverStatus={server.status} />}
+          {activeTab === 'mods' && <ModsManager serverId={id} serverName={server.name} serverStatus={server.status} />}
           {activeTab === 'activity' && <ActivityFeed serverId={id} />}
           {activeTab === 'settings' && <ServerSettings serverId={id} />}
         </div>
