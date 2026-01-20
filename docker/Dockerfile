@@ -16,7 +16,7 @@ COPY frontend ./
 RUN npm run build
 
 # Stage 2: Build backend dependencies
-FROM node:20-alpine AS backend-builder
+FROM node:20-slim AS backend-builder
 
 WORKDIR /app/backend
 
