@@ -37,8 +37,8 @@ export default function ServerDetail() {
   const [rememberAuth, setRememberAuth] = useState(true);
   
   useEffect(() => {
-    // WebSocket connection is handled at app level
-    // const ws = websocket.connect();
+    const ws = websocket.getConnection();
+    if (!ws) return;
 
     const handleMessage = (event) => {
       const message = JSON.parse(event.data);
