@@ -38,11 +38,11 @@ RUN java --version
 # Set working directory
 WORKDIR /app/backend
 
-# Copy backend source
-COPY backend ./
-
-# Copy backend node_modules from builder
+# Copy backend node_modules from builder FIRST
 COPY --from=backend-builder /app/backend/node_modules ./node_modules
+
+# Copy backend source code
+COPY backend/ ./
 
 # Copy built frontend from builder
 COPY --from=frontend-builder /app/frontend/dist ./public
