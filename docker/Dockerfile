@@ -27,10 +27,13 @@ COPY backend/package*.json ./
 RUN npm ci --only=production
 
 # Stage 3: Final runtime image
-FROM node:20-alpine
+FROM node:20-slim
 
-# Install Java 25 JRE (not JDK) - much smaller
-RUN apk add --no-cache openjdk21-jre
+# Install OpenJDK 21 JRE
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openjdk-21-jre-headless && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Verify Java installation
 RUN java --version
