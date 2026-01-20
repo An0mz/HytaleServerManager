@@ -35,8 +35,9 @@ export default function CreateServer() {
   useEffect(() => {
     checkCacheStatus();
     
-    // Set up WebSocket for OAuth download
-    const ws = WebSocketService.connect();
+    // WebSocket connection is handled at app level
+    // const ws = WebSocketService.connect();
+    const ws = WebSocketService.getConnection();
 
     if (ws) {
       // Track connection/auth status

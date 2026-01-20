@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import ServerDetail from './pages/ServerDetail';
@@ -10,6 +10,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { Toaster } from './components/ui/sonner';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
+import websocket from './services/websocket';
 
 function App() {
   return (
@@ -32,6 +33,17 @@ function App() {
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   const { theme } = useTheme();
+  
+  // Initialize WebSocket connection once when authenticated
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      websocket.connect();
+    }
+    
+    return () => {
+      // Don't disconnect on unmount, keep connection alive
+    };
+  }, [isAuthenticated, loading]);
   
   if (loading) {
     return (

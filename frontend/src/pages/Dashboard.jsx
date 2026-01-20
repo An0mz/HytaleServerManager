@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadServers();
-    websocket.connect();
+    // WebSocket connection is handled at app level
 
     // Listen for manual client-side signals to refresh servers (fallback for WS)
     const handleServersChanged = () => loadServers();

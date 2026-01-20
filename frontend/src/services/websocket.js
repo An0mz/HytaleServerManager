@@ -7,6 +7,7 @@ class WebSocketService {
     this.reconnectDelay = 3000;
     this.isAuthenticated = false;
     this.authToken = null; // Store token in memory
+    this.isAuthenticating = false; // Prevent duplicate auth attempts
   }
 
   // Call this from the Login component after successful login
@@ -39,8 +40,14 @@ class WebSocketService {
   }
 
   authenticate() {
+    // Prevent duplicate authentication attempts
+    if (this.isAuthenticating || this.isAuthenticated) {
+      return;
+    }
+    
     const token = this.getTokenFromCookie();
     if (token && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.isAuthenticating = true;
       this.send({
         type: 'authenticate',
         token: token
@@ -49,8 +56,15 @@ class WebSocketService {
   }
 
   connect() {
-    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      return this.ws;
+    // Return existing connection if already open or connecting
+    if (this.ws) {
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        return this.ws;
+      }
+      // Clean up closing/closed connection
+      if (this.ws.readyState === WebSocket.CLOSING || this.ws.readyState === WebSocket.CLOSED) {
+        this.ws = null;
+      }
     }
 
     let wsUrl = null;
@@ -96,8 +110,10 @@ class WebSocketService {
 
         if (data.type === 'authenticated') {
           this.isAuthenticated = true;
+          this.isAuthenticating = false;
         } else if (data.type === 'error' && data.message?.includes('Authentication')) {
           this.isAuthenticated = false;
+          this.isAuthenticating = false;
           console.error('WebSocket authentication failed:', data.message);
         }
         
@@ -120,6 +136,7 @@ class WebSocketService {
     this.ws.onclose = (event) => {
       console.warn('WebSocket disconnected', event);
       this.isAuthenticated = false;
+      this.isAuthenticating = false;
       this.notifyListeners('disconnected', event);
       this.attemptReconnect();
     };
@@ -226,6 +243,7 @@ class WebSocketService {
       this.ws.close();
       this.ws = null;
       this.isAuthenticated = false;
+      this.isAuthenticating = false;
     }
   }
 

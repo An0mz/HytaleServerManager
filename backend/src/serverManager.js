@@ -338,7 +338,8 @@ constructor(db) {
         memory: 0,
         uptime: 0
       },
-      consoleHistory: []
+      consoleHistory: [],
+      isReady: false
     };
 
     this.servers.set(serverId, serverInstance);
@@ -488,7 +489,9 @@ constructor(db) {
       /Hytale Server Booted/i
     ];
 
-    if (readyPatterns.some(pattern => pattern.test(output))) {
+    // Only trigger ready logic once per server instance
+    if (!serverInstance.isReady && readyPatterns.some(pattern => pattern.test(output))) {
+      serverInstance.isReady = true;
       console.log(`Server ${serverId} is ready!`);
       this.db.updateServerStatus(serverId, 'running');
       
