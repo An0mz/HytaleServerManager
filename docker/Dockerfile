@@ -47,12 +47,12 @@ COPY backend/ ./
 # Copy built frontend from builder
 COPY --from=frontend-builder /app/frontend/dist ./public
 
-# Create necessary directories under /app/data for single volume mount
-RUN mkdir -p /app/data/servers /app/data/backups /app/data/cache/hytale
-
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
+    adduser -S nodejs -u 1001
+
+# Create necessary directories under /app/data for single volume mount
+RUN mkdir -p /app/data/servers /app/data/backups /app/data/cache/hytale && \
     chown -R nodejs:nodejs /app
 
 USER nodejs
