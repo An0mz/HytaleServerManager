@@ -47,15 +47,8 @@ COPY backend/ ./
 # Copy built frontend from builder
 COPY --from=frontend-builder /app/frontend/dist ./public
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
 # Create necessary directories under /app/data for single volume mount
-RUN mkdir -p /app/data/servers /app/data/backups /app/data/cache/hytale && \
-    chown -R nodejs:nodejs /app
-
-USER nodejs
+RUN mkdir -p /app/data/servers /app/data/backups /app/data/cache/hytale
 
 # Expose ports
 EXPOSE 3000 5520-5530/udp
